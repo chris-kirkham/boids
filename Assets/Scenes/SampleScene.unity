@@ -508,7 +508,7 @@ Transform:
   m_PrefabInternal: {fileID: 0}
   m_GameObject: {fileID: 534669902}
   m_LocalRotation: {x: -0, y: 1, z: -0, w: 0.00006569921}
-  m_LocalPosition: {x: -4.84, y: 8.86, z: 15.33}
+  m_LocalPosition: {x: -4.84, y: 8.86, z: 35.7}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 0}
@@ -830,6 +830,11 @@ Prefab:
         type: 2}
       propertyPath: m_LightProbeUsage
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 114501496727027554, guid: b987e4eecfe69d34b9e9ab2c40e4a51a,
+        type: 2}
+      propertyPath: spawnAreaSize
+      value: 100
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b987e4eecfe69d34b9e9ab2c40e4a51a, type: 2}

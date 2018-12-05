@@ -8,8 +8,8 @@ public class BoidBehaviour : MonoBehaviour {
     public float obstacleAvoidDistance;
     public float overlapSphereRadius;
 
-    public const float VELOCITY_LIMIT = 10.0f;
-    public const int NUM_CLOSEST_TO_CHECK = 5;
+    public float velocityLimit = 10.0f;
+    public int numClosestToCheck = 5;
 
     public const float VISION_UPDATE_TIME_INTERVAL = 0.05f;
     private float updateTime = 0.0f;
@@ -85,10 +85,10 @@ public class BoidBehaviour : MonoBehaviour {
     }
 
     void MoveBoid() {
-        Vector3 vel = limitVelocity(CalcRules());
+        Vector3 vel = limitVelocity(CalcRules(), velocityLimit);
         //Debug.Log("SeenBoids size = " + seenBoids.Count);
         rb.AddForce(vel);
-        //rb.velocity = limitVelocity(rb.velocity); //cap velocity at specified magnitude
+        //rb.velocity = limitVelocity(rb.velocity, velocityLimit); //cap velocity at specified magnitude
     }
 
     Vector3 CalcRules()
@@ -106,29 +106,29 @@ public class BoidBehaviour : MonoBehaviour {
             //if close to edge of bounding box, move away from the edge
             if (this.transform.position.x > positiveBounds.x)
             {
-                boundsAvoidVector.x -= OUT_OF_BOUNDS_VELOCITY;
+                boundsAvoidVector.x -= Mathf.Abs(this.transform.position.x - positiveBounds.x);
             }
             else if (this.transform.position.x < negativeBounds.x)
             {
-                boundsAvoidVector.x += OUT_OF_BOUNDS_VELOCITY;
+                boundsAvoidVector.x += Mathf.Abs(this.transform.position.x - negativeBounds.x);
             }
 
             if (this.transform.position.y > positiveBounds.y)
             {
-                boundsAvoidVector.y -= OUT_OF_BOUNDS_VELOCITY;
+                boundsAvoidVector.y -= Mathf.Abs(this.transform.position.y - positiveBounds.y);
             }
             else if (this.transform.position.y < negativeBounds.y)
             {
-                boundsAvoidVector.y += OUT_OF_BOUNDS_VELOCITY;
+                boundsAvoidVector.y += Mathf.Abs(this.transform.position.y - negativeBounds.y);
             }
 
             if (this.transform.position.z > positiveBounds.z)
             {
-                boundsAvoidVector.z -= OUT_OF_BOUNDS_VELOCITY;
+                boundsAvoidVector.z -= Mathf.Abs(this.transform.position.z - positiveBounds.z);
             }
             else if (this.transform.position.z < negativeBounds.z)
             {
-                boundsAvoidVector.z += OUT_OF_BOUNDS_VELOCITY;
+                boundsAvoidVector.z += Mathf.Abs(this.transform.position.z - negativeBounds.z);
             }
         }
 
@@ -154,7 +154,7 @@ public class BoidBehaviour : MonoBehaviour {
         if (seenBoids.Count > 0)
         {
             //check if NUM_CLOSEST_TO_CHECK > number of visible boids
-            int numToCheck = Mathf.Min(NUM_CLOSEST_TO_CHECK, seenBoids.Count);
+            int numToCheck = Mathf.Min(numClosestToCheck, seenBoids.Count);
 
             for(int i = 0; i < numToCheck; i++)
             {
@@ -183,8 +183,8 @@ public class BoidBehaviour : MonoBehaviour {
 
     }
 
-    //Limit the boid's maximum velocity
-    Vector3 limitVelocity(Vector3 velocity, float velocityLimit = VELOCITY_LIMIT)
+    //Limit a vector's magnitude to a certain limit if it is over that limit
+    Vector3 limitVelocity(Vector3 velocity, float velocityLimit)
     {
         float velMagnitude = velocity.magnitude;
 
@@ -196,5 +196,11 @@ public class BoidBehaviour : MonoBehaviour {
         {
             return velocity;
         }
+    }
+
+    //Set a vector's magnitude to a specified number
+    Vector3 setMagnitude(Vector3 vector, float magnitude)
+    {
+        return (vector / vector.magnitude) * magnitude;
     }
 }

@@ -11,8 +11,8 @@ public class BoidSpawner : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        numBoids = 100;
-        spawnAreaSize = 25.0f;
+        //numBoids = 100;
+        //spawnAreaSize = 25.0f;
   
         SpawnBoids(numBoids);
 	}

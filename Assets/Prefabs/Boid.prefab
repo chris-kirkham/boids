@@ -129,6 +129,8 @@ MonoBehaviour:
   avoidDistance: 3
   obstacleAvoidDistance: 2
   overlapSphereRadius: 10
+  velocityLimit: 5
+  numClosestToCheck: 5
   useRandomGoal: 1
   useAdaptiveOverlapSphere: 0
   useBoundingCoordinates: 1
