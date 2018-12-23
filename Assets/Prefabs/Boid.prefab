@@ -130,9 +130,9 @@ MonoBehaviour:
   numClosestToCheck: 5
   useRandomGoal: 1
   useAdaptiveOverlapSphere: 0
-  useBoundingCoordinates: 1
-  positiveBounds: {x: 10, y: 10, z: 10}
-  negativeBounds: {x: -10, y: -10, z: -10}
+  useBoundingCoordinates: 0
+  positiveBounds: {x: 100, y: 100, z: 100}
+  negativeBounds: {x: -100, y: -100, z: -100}
   boidCollectiveController: {fileID: 114091617945803554, guid: b987e4eecfe69d34b9e9ab2c40e4a51a,
     type: 3}
 --- !u!96 &3326008091566760184
@@ -145,8 +145,8 @@ TrailRenderer:
   m_GameObject: {fileID: 1722337560723314}
   m_Enabled: 0
   m_CastShadows: 1
-  m_ReceiveShadows: 1
-  m_DynamicOccludee: 1
+  m_ReceiveShadows: 0
+  m_DynamicOccludee: 0
   m_MotionVectors: 1
   m_LightProbeUsage: 0
   m_ReflectionProbeUsage: 0
