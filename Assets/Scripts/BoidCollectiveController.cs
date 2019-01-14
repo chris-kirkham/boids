@@ -25,7 +25,7 @@ public class BoidCollectiveController : MonoBehaviour {
             SetNewRandomGoal();
         }
 
-        Debug.DrawLine(this.transform.position, goalVector, Color.green);
+        //Debug.DrawLine(this.transform.position, goalVector, Color.green);
 
     }
 

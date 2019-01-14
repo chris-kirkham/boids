@@ -45,7 +45,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   boid: {fileID: 1722337560723314, guid: 2242a475eb618df44967321ffa67b1b7, type: 3}
-  numBoids: 5
+  numBoids: 250
   spawnAreaSize: 10
 --- !u!114 &114091617945803554
 MonoBehaviour:

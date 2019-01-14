@@ -4,31 +4,40 @@ using UnityEngine;
 
 public class BoidBehaviour : MonoBehaviour {
 
+    Rigidbody rb;
+    List<GameObject> seenBoids; //list in which to store other boids seen by this boid at each timestep
+    List<GameObject> seenObstacles; //list in which to store environment obstacles seen by this boid at each timestep
+    public BoidCollectiveController boidCollectiveController;
+
+    public MouseTargetPosition mouseTargetObj; //ScriptableObject which holds mouse target position, if using mouse following
+    private Vector3 mouseTarget;
+
     public float avoidDistance; //distance from other boids/objects at which this boid tries to stay
     public float obstacleAvoidDistance;
     public float overlapSphereRadius;
-
     public float velocityLimit = 10.0f;
     public int numClosestToCheck = 5;
 
-    public const float VISION_UPDATE_TIME_INTERVAL = 0.05f;
-    private float updateTime = 0.0f;
+    private const float VISION_UPDATE_TIME_INTERVAL = 0.05f;
+    private float updateTime = 0.0f; //used to time next vision update
 
+    public bool useMouseFollow;
     public bool useRandomGoal;
-
     public bool useAdaptiveOverlapSphere;
+
+    //multipliers for boid/obstacle/out-of-bounds avoidance
+    public float boundsAvoidMultiplier = 1.0f;
+    public float boidAvoidMultiplier = 1.0f;
+    public float obstacleAvoidMultiplier = 1.0f;
+    public float mouseFollowMultiplier = 1.0f;
+    public float goalVectorMultiplier = 1.0f; //multiplier of random goal direction vector
 
     //coordinates to constrain boid movement
     public bool useBoundingCoordinates = true;
     public Vector3 positiveBounds, negativeBounds;
-    public const float OUT_OF_BOUNDS_VELOCITY = 10.0f; //velocity with which to return to bounding area if out of bounds (added to other velocities so will be capped after)
+    private const float OUT_OF_BOUNDS_VELOCITY = 10.0f; //velocity with which to return to bounding area if out of bounds (added to other velocities so will be capped after)
 
-    Rigidbody rb;
-    //CapsuleCollider visionTrigger; //trigger which tells us what the boid can see
-    List<GameObject> seenBoids; //list in which to store other boids seen by this boid at each timestep
-    List<GameObject> seenObstacles; //list in which to store environment obstacles seen by this boid at each timestep
 
-    public BoidCollectiveController boidCollectiveController;
 
     // Use this for initialization
     void Start () {
@@ -41,13 +50,16 @@ public class BoidBehaviour : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
+        mouseTarget = mouseTargetObj.mouseTargetPosition;
+
         Debug.DrawLine(this.transform.position, this.transform.position + rb.velocity, Color.red);
         Debug.Log(rb.velocity.magnitude);
     }
 
     void OnDrawGizmos()
     {
-        //Gizmos.DrawWireSphere(this.transform.position, overlapSphereRadius);
+        //Gizmos.color = new Color(0.5f, 0.5f, 0.5f, 0.1f);
+        //Gizmos.DrawSphere(this.transform.position, overlapSphereRadius);
     }
 
     void FixedUpdate()
@@ -98,6 +110,7 @@ public class BoidBehaviour : MonoBehaviour {
         Vector3 obstacleAvoidVector = new Vector3();
         Vector3 centre = new Vector3();
         Vector3 velocityMatch = new Vector3();
+        Vector3 mouseFollowVector = new Vector3();
         Vector3 goalVector = new Vector3();
 
         /** calculate return-to-bounds vector */
@@ -130,10 +143,16 @@ public class BoidBehaviour : MonoBehaviour {
             {
                 boundsAvoidVector.z += Mathf.Abs(this.transform.position.z - negativeBounds.z);
             }
+
+            boundsAvoidVector *= boundsAvoidMultiplier;
         }
 
+        /**update mouse follow vector */
+        if (useMouseFollow) mouseFollowVector = (mouseTarget - transform.position) * mouseFollowMultiplier;
+        Debug.DrawLine(transform.position, mouseFollowVector);
+
         /** update goal vector */
-        if (useRandomGoal) { goalVector = boidCollectiveController.GetGoal(); }
+        if (useRandomGoal) { goalVector = (boidCollectiveController.GetGoal() - transform.position) * goalVectorMultiplier; }
 
         /** calculate obstacle avoidance vector */
         if(seenObstacles.Count > 0)
@@ -147,6 +166,8 @@ public class BoidBehaviour : MonoBehaviour {
                     Debug.DrawLine(this.transform.position, obstacle.transform.position, Color.blue);
                 }
             }
+
+            obstacleAvoidVector *= obstacleAvoidMultiplier;
         }
 
         /** update and return vectors requiring knowledge of other boids (boid avoidance, local centre, velocity matching),
@@ -167,18 +188,19 @@ public class BoidBehaviour : MonoBehaviour {
 
                 centre += seenBoids[i].transform.position - this.transform.position; //move towards centre of nearby boids
                 velocityMatch += seenBoids[i].GetComponent<Rigidbody>().velocity; //match velocity with nearby boids
+                boidAvoidVector *= boidAvoidMultiplier;
             }
 
             centre = centre / seenBoids.Count;
             velocityMatch = velocityMatch / seenBoids.Count;
 
             //Debug.Log("bounds avoid = " + boundsAvoidVector + ", avoid = " + avoidVector + ", centre mass = " + centre + ", match velocities = " + velocityMatch);
-            return boundsAvoidVector + boidAvoidVector + centre + velocityMatch + goalVector;
+            return boundsAvoidVector + boidAvoidVector + centre + velocityMatch + mouseFollowVector + goalVector;
         }
         else
         {
             //if no boids nearby, do some roaming/exploring behaviour?
-            return boundsAvoidVector + obstacleAvoidVector + goalVector;
+            return boundsAvoidVector + obstacleAvoidVector + mouseFollowVector + goalVector;
         }
 
     }

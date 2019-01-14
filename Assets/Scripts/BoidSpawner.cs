@@ -10,10 +10,8 @@ public class BoidSpawner : MonoBehaviour {
     public float spawnAreaSize;
 
 	// Use this for initialization
-	void Start () {
-        //numBoids = 100;
-        //spawnAreaSize = 25.0f;
-  
+	void Start ()
+    {
         SpawnBoids(numBoids);
 	}
 
@@ -23,11 +21,6 @@ public class BoidSpawner : MonoBehaviour {
         Gizmos.DrawCube(transform.position, new Vector3(0.2f, 0.2f, 0.2f));
     }
 	
-	// Update is called once per frame
-	void Update () {
-		
-	}
-
     void SpawnBoids(int numBoids)
     {
         for(int i = 0; i < numBoids; i++)
