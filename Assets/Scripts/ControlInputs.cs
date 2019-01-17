@@ -12,6 +12,9 @@ public class ControlInputs : MonoBehaviour
     //boid behaviour controls
     public bool useMouseFollow, useRandomGoal, useBoundingCoordinates;
 
+    //spawn new boids/destroy existing boids during gameplay
+    public bool spawnNewBoid, destroyBoid;
+
     //camera movement
     public float moveHorizontal, moveVertical;
 
@@ -39,9 +42,12 @@ public class ControlInputs : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        useMouseFollow = true;
+        useMouseFollow = false;
         useRandomGoal = false;
         useBoundingCoordinates = false;
+
+        spawnNewBoid = false;
+        destroyBoid = false;
 
         useMouseLook = false;
         moveHorizontal = Input.GetAxis("Horizontal");
@@ -64,6 +70,10 @@ public class ControlInputs : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Alpha1)) useMouseFollow = !useMouseFollow;
         if (Input.GetKeyDown(KeyCode.Alpha2)) useRandomGoal = !useRandomGoal;
         if (Input.GetKeyDown(KeyCode.Alpha3)) useBoundingCoordinates = !useBoundingCoordinates;
+
+        //boid spawn/destroy - not a toggle, should only be true on the frame the key is pressed
+        spawnNewBoid = (Input.GetKeyDown(KeyCode.Z) && !spawnNewBoid);
+        destroyBoid = (Input.GetKeyDown(KeyCode.X) && !destroyBoid);
 
         //camera movement
         moveHorizontal = Input.GetAxis("Horizontal");

@@ -173,7 +173,7 @@ public class BoidBehaviour : MonoBehaviour {
          *  otherwise return sum of other vectors */
         if (seenBoids.Count > 0)
         {
-            //check if NUM_CLOSEST_TO_CHECK > number of visible boids
+            //check if numClosestToCheck > number of visible boids
             int numToCheck = Mathf.Min(numClosestToCheck, seenBoids.Count);
 
             for(int i = 0; i < numToCheck; i++)
