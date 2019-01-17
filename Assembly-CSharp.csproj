@@ -57,6 +57,7 @@
      <Compile Include="Assets\Scripts\BoidCollectiveController.cs" />
      <Compile Include="Assets\Scripts\BoidSpawner.cs" />
      <Compile Include="Assets\Scripts\CameraController.cs" />
+     <Compile Include="Assets\Scripts\ControlInputs.cs" />
      <Compile Include="Assets\Scripts\MouseTargetController.cs" />
      <Compile Include="Assets\Scripts\ScriptableObjects\MouseTargetPosition.cs" />
  <Reference Include="Unity.RenderPipelines.Core.Editor">

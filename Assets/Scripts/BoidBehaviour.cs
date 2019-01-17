@@ -50,10 +50,9 @@ public class BoidBehaviour : MonoBehaviour {
     // Update is called once per frame
     void Update()
     {
-        mouseTarget = mouseTargetObj.mouseTargetPosition;
+        if(ControlInputs.Instance.useMouseFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
 
         Debug.DrawLine(this.transform.position, this.transform.position + rb.velocity, Color.red);
-        Debug.Log(rb.velocity.magnitude);
     }
 
     void OnDrawGizmos()
@@ -114,7 +113,7 @@ public class BoidBehaviour : MonoBehaviour {
         Vector3 goalVector = new Vector3();
 
         /** calculate return-to-bounds vector */
-        if (useBoundingCoordinates)
+        if (ControlInputs.Instance.useBoundingCoordinates)
         {
             //if close to edge of bounding box, move away from the edge
             if (this.transform.position.x > positiveBounds.x)
@@ -148,11 +147,11 @@ public class BoidBehaviour : MonoBehaviour {
         }
 
         /**update mouse follow vector */
-        if (useMouseFollow) mouseFollowVector = (mouseTarget - transform.position) * mouseFollowMultiplier;
+        if (ControlInputs.Instance.useMouseFollow) mouseFollowVector = (mouseTarget - transform.position) * mouseFollowMultiplier;
         Debug.DrawLine(transform.position, mouseFollowVector);
 
         /** update goal vector */
-        if (useRandomGoal) { goalVector = (boidCollectiveController.GetGoal() - transform.position) * goalVectorMultiplier; }
+        if (ControlInputs.Instance.useRandomGoal) { goalVector = (boidCollectiveController.GetGoal() - transform.position) * goalVectorMultiplier; }
 
         /** calculate obstacle avoidance vector */
         if(seenObstacles.Count > 0)

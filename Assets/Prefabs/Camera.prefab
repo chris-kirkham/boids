@@ -96,10 +96,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ac8e0f9dbea9f374fb62c022351383f3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useMouseLook: 0
+  controlInputs: {fileID: 3953652654775769033, guid: 8b52a3f6c4395b74b87fd88f4b295a44,
+    type: 3}
   moveSpeed: 1
-  lookSpeedX: 2
-  lookSpeedY: 2
 --- !u!114 &7989434269425326688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -112,7 +111,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2774a72d44d600458663c47347c04e5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  controlInputs: {fileID: 3953652654775769033, guid: 8b52a3f6c4395b74b87fd88f4b295a44,
+    type: 3}
   mouseTarget: {fileID: 11400000, guid: 8aa5c311f49881c4285f6f8049442bf6, type: 2}
   targetVisualiser: {fileID: 4949686615146403895, guid: f56880ed1a601c34a8b1ba77a4cbf9b5,
     type: 3}
-  showTarget: 1
