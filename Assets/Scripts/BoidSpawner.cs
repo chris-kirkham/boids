@@ -6,22 +6,25 @@ using UnityEngine;
 public class BoidSpawner : MonoBehaviour {
 
     public GameObject boid;
-    public int numBoids;
+    public int initNumBoids; //initial number of boids to spawn
     public float spawnAreaSize;
 
     private Stack<GameObject> boids;
+    private int boidCount; //current number of boids in the scene 
 
     private bool debug = false;
 
     // Use this for initialization
-	void Start ()
+	void Awake ()
     {
         boids = new Stack<GameObject>();
 
-        for (int i = 0; i < numBoids; i++)
+        for (int i = 0; i < initNumBoids; i++)
         {
             SpawnBoid();
         }
+
+        boidCount = initNumBoids;
 	}
 
     void OnDrawGizmos()
@@ -40,10 +43,12 @@ public class BoidSpawner : MonoBehaviour {
         if (ControlInputs.Instance.spawnNewBoid) 
         {
             SpawnBoid();
+            boidCount++;
         }
         else if(ControlInputs.Instance.destroyBoid) //destroys last-created boid
         {
             Destroy(boids.Pop());
+            boidCount--;
         }
     }
 
@@ -55,5 +60,10 @@ public class BoidSpawner : MonoBehaviour {
         Quaternion boidRotation = new Quaternion();
         boids.Push(Instantiate(boid, boidPosition, boidRotation));
         if(debug) Debug.Log("boid spawned at " + boidPosition + "!");
+    }
+
+    public int GetBoidCount()
+    {
+        return boidCount;
     }
 }

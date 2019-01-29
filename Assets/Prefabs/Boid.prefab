@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 54103664927240968}
   - component: {fileID: 114164988839329578}
   - component: {fileID: 3326008091566760184}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Boid
   m_TagString: Boid
   m_Icon: {fileID: 0}
@@ -125,25 +125,22 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidCollectiveController: {fileID: 114091617945803554, guid: b987e4eecfe69d34b9e9ab2c40e4a51a,
     type: 3}
-  controlInputs: {fileID: 3953652654775769033, guid: 8b52a3f6c4395b74b87fd88f4b295a44,
-    type: 3}
   mouseTargetObj: {fileID: 11400000, guid: 8aa5c311f49881c4285f6f8049442bf6, type: 2}
-  avoidDistance: 3
+  boidAvoidDistance: 3
   obstacleAvoidDistance: 5
-  overlapSphereRadius: 25
-  velocityLimit: 5
-  numClosestToCheck: 5
-  useMouseFollow: 1
+  overlapSphereRadius: 2
+  velocityLimit: 10
+  numClosestToCheck: 3
+  useMouseFollow: 0
   useRandomGoal: 0
-  useAdaptiveOverlapSphere: 0
+  useAdaptiveOverlapSphere: 1
   boundsAvoidMultiplier: 1
-  boidAvoidMultiplier: 1
-  obstacleAvoidMultiplier: 1
-  mouseFollowMultiplier: 0.25
+  boidAvoidMultiplier: 3
+  obstacleAvoidMultiplier: 10
+  mouseFollowMultiplier: 0.5
   goalVectorMultiplier: 1
   useBoundingCoordinates: 0
-  positiveBounds: {x: 20, y: 20, z: 20}
-  negativeBounds: {x: -20, y: -20, z: -20}
+  boundsSize: 100
 --- !u!96 &3326008091566760184
 TrailRenderer:
   serializedVersion: 2
