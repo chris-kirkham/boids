@@ -36,7 +36,6 @@ public class BoidBehaviour : MonoBehaviour {
 
     //coordinates to constrain boid movement
     public bool useBoundingCoordinates = true;
-    //public GameObject boundsBox; //object whose bounds will be used as boid bounding area - must have a Collider
     public float boundsSize; //size of cube representing boid bounding area (centre is at (0, 0, 0))
     private Vector3 positiveBounds, negativeBounds; //bounding coords (from boundsBox object)
     private const float OUT_OF_BOUNDS_VELOCITY = 10.0f; //velocity with which to return to bounding area if out of bounds (added to other velocities so will be capped after)
@@ -47,15 +46,17 @@ public class BoidBehaviour : MonoBehaviour {
     private const int MAX_OBSTACLE_RAYCAST_TRIES = 10; //max number of raycasts the boid will try to find a path around an obstacle
     private float rayIncrement = 10f; //number to increase/decrease the x/y/z (depending on direction) of each raycast by when trying to find path around obstacle
 
-    private Vector3 currAvoidGoal = Vector3.zero;
-
     //LAYER MASKS
+    private const int LAYER_BOID = 1 << 9;
     private const int LAYER_OBSTACLE = 1 << 10;
 
     // Use this for initialization
     void Start () {
         Time.timeScale = 1f;
         rb = GetComponent<Rigidbody>();
+
+        //set initial boid velocity
+        rb.velocity = new Vector3(Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit));
 
         minAdaptiveOverlapRadius = overlapSphereRadius;
         maxAdaptiveOverlapRadius = overlapSphereRadius * 10;
@@ -72,21 +73,17 @@ public class BoidBehaviour : MonoBehaviour {
     void Update()
     {
         if(ControlInputs.Instance.useMouseFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
-        if (currAvoidGoal != Vector3.zero)
-        {
-            //Debug.DrawLine(transform.position, transform.position + currAvoidGoal, Color.green);
-            //Debug.Log(GetInstanceID() + " avoid timer = " + avoidTimer);
-        }
-
-        //Debug.DrawLine(this.transform.position, this.transform.position + rb.velocity, Color.red);
+        //Debug.DrawLine(transform.position, transform.position + rb.velocity, Color.red);
     }
+    
     /*
     void OnDrawGizmos()
     {
         Gizmos.color = new Color(0.5f, 0.5f, 0.5f, 0.1f);
-        Gizmos.DrawSphere(this.transform.position, overlapSphereRadius);
+        Gizmos.DrawSphere(transform.position, obstacleAvoidDistance);
     }
     */
+
     void FixedUpdate()
     {
         updateTime -= Time.deltaTime;
@@ -97,19 +94,17 @@ public class BoidBehaviour : MonoBehaviour {
 
             //clear seen objects lists before checking again
             seenBoids.Clear();
-            //seenObstacles.Clear();
+            seenObstacles.Clear();
 
-            //find nearby objects
-            Collider[] overlappingColliders = Physics.OverlapSphere(rb.transform.position, overlapSphereRadius);
-
-            //add overlapping objects to boids/obstacles lists
-            foreach (Collider collider in overlappingColliders)
+            //find nearby boids/obstacles and add them to seenBoids/seenObstacles
+            Collider[] boids = Physics.OverlapSphere(rb.transform.position, overlapSphereRadius, LAYER_BOID);
+            foreach (Collider c in boids)
             {
-                if (collider.tag == "Boid" && collider.gameObject != this.gameObject)
-                {
-                    seenBoids.Add(collider.gameObject);
-                }
+                if (c.gameObject != this.gameObject) seenBoids.Add(c.gameObject);
             }
+
+            Collider[] obstacles = Physics.OverlapSphere(rb.transform.position, OBSTACLE_CHECK_DISTANCE / 2, LAYER_OBSTACLE);
+            foreach (Collider c in obstacles) seenObstacles.Add(c.gameObject);
 
             //ADAPTIVE OVERLAP SPHERE: if current pass didn't find enough boids, increase overlap sphere size; if it did, reduce it
             if (useAdaptiveOverlapSphere)
@@ -127,8 +122,6 @@ public class BoidBehaviour : MonoBehaviour {
             MoveBoid();
             transform.right = -rb.velocity.normalized; //rotate boid to face movement direction
         }
-
-
     }
 
     void MoveBoid()
@@ -145,31 +138,31 @@ public class BoidBehaviour : MonoBehaviour {
         if (ControlInputs.Instance.useBoundingCoordinates)
         {
             //if close to edge of bounding box, move away from the edge
-            if (this.transform.position.x > positiveBounds.x)
+            if (transform.position.x > positiveBounds.x)
             {
-                boundsAvoidVector.x -= Mathf.Abs(this.transform.position.x - positiveBounds.x);
+                boundsAvoidVector.x -= Mathf.Abs(transform.position.x - positiveBounds.x);
             }
-            else if (this.transform.position.x < negativeBounds.x)
+            else if (transform.position.x < negativeBounds.x)
             {
-                boundsAvoidVector.x += Mathf.Abs(this.transform.position.x - negativeBounds.x);
-            }
-
-            if (this.transform.position.y > positiveBounds.y)
-            {
-                boundsAvoidVector.y -= Mathf.Abs(this.transform.position.y - positiveBounds.y);
-            }
-            else if (this.transform.position.y < negativeBounds.y)
-            {
-                boundsAvoidVector.y += Mathf.Abs(this.transform.position.y - negativeBounds.y);
+                boundsAvoidVector.x += Mathf.Abs(transform.position.x - negativeBounds.x);
             }
 
-            if (this.transform.position.z > positiveBounds.z)
+            if (transform.position.y > positiveBounds.y)
             {
-                boundsAvoidVector.z -= Mathf.Abs(this.transform.position.z - positiveBounds.z);
+                boundsAvoidVector.y -= Mathf.Abs(transform.position.y - positiveBounds.y);
             }
-            else if (this.transform.position.z < negativeBounds.z)
+            else if (transform.position.y < negativeBounds.y)
             {
-                boundsAvoidVector.z += Mathf.Abs(this.transform.position.z - negativeBounds.z);
+                boundsAvoidVector.y += Mathf.Abs(transform.position.y - negativeBounds.y);
+            }
+
+            if (transform.position.z > positiveBounds.z)
+            {
+                boundsAvoidVector.z -= Mathf.Abs(transform.position.z - positiveBounds.z);
+            }
+            else if (transform.position.z < negativeBounds.z)
+            {
+                boundsAvoidVector.z += Mathf.Abs(transform.position.z - negativeBounds.z);
             }
 
             boundsAvoidVector *= boundsAvoidMultiplier;
@@ -195,13 +188,13 @@ public class BoidBehaviour : MonoBehaviour {
             for (int i = 0; i < numToCheck; i++)
             {
                 //avoid other boids
-                if (Vector3.Distance(this.transform.position, seenBoids[i].transform.position) < boidAvoidDistance)
+                if (Vector3.Distance(transform.position, seenBoids[i].transform.position) < boidAvoidDistance)
                 {
-                    boidAvoidVector += this.transform.position - seenBoids[i].transform.position;
-                    Debug.DrawLine(this.transform.position, seenBoids[i].transform.position, Color.cyan);
+                    boidAvoidVector += transform.position - seenBoids[i].transform.position;
+                    Debug.DrawLine(transform.position, seenBoids[i].transform.position, Color.cyan);
                 }
 
-                centre += seenBoids[i].transform.position - this.transform.position; //move towards centre of nearby boids
+                centre += seenBoids[i].transform.position - transform.position; //move towards centre of nearby boids
                 velocityMatch += seenBoids[i].GetComponent<Rigidbody>().velocity; //match velocity with nearby boids
                 
             }
@@ -217,66 +210,64 @@ public class BoidBehaviour : MonoBehaviour {
 
     //Check if the boid is heading towards an obstacle; if so, fire rays out in increasing angles to the left, right,
     //above and below the boid in order to find a path around an obstacle.
-    //If multiple rays find a path, select one at random - this means the boid will always try all four directions, 
-    //but should provide more realistic behaviour as each boid will take a random path around the object, 
-    //rather than them all going in the same direction.
-    //When a path is found, member variable isAvoidingObstacle is set to true
+    //If multiple rays find a path, select the one closest to the boid's current velocity.
     Vector3 AvoidObstacles()
     {
         Vector3 avoidVector = Vector3.zero; //return vector
-        
+
         //fire a ray in direction of boid's velocity (sqr magnitude of velocity in length; change this?) to see if there is an obstacle in its path.
-        //if there is an obstacle in its path (regardless of whether it is currently avoiding a(nother) obstacle, calculate new avoid vector
+        //if there is an obstacle in its path (regardless of whether it is currently avoiding a(nother) obstacle,
+        //find avoid vector which is closest to either current velocity vector or mouse target, depending on if using mouse follow.
         RaycastHit hit;
-        if (Physics.Raycast(transform.position, rb.velocity, out hit, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
+        Vector3 target = (ControlInputs.Instance.useMouseFollow) ? mouseTarget - transform.position : rb.velocity;
+        if (Physics.Raycast(transform.position, target, out hit, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
         {
-            //Debug.Log(GetInstanceID() + "obstacle raycast hit");
-            currAvoidGoal = Vector3.zero;
-
             int raycastTries = 0;
-            float inc = rayIncrement * rb.velocity.sqrMagnitude; //angle in radians to cast rays at (made negative for left/down casts)
+            float inc = rayIncrement;
 
-            //find avoid vector which is closest to current velocity vector
             Vector3 closestVector = Vector3.positiveInfinity;
             bool foundAvoidVector = false;
             float minDiff = Mathf.Infinity;
             while (raycastTries <= MAX_OBSTACLE_RAYCAST_TRIES) 
             {
                 //up
-                Vector3 up = new Vector3(rb.velocity.x, rb.velocity.y + inc, rb.velocity.z - inc);
-                
+                Vector3 up = new Vector3(target.x, target.y + inc, target.z - inc);
+                //Debug.DrawRay(transform.position, up, Color.blue);
                 if (!Physics.Raycast(transform.position, up, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
-                    float upDiff = Vector3.SqrMagnitude(rb.velocity - up);
-                    if (upDiff < minDiff)
-                    {
-                        closestVector = up;
-                        minDiff = upDiff;
-                        foundAvoidVector = true;
-                    }
+                    closestVector = up;
+                    minDiff = Vector3.SqrMagnitude(target - up);
+                    foundAvoidVector = true;
                 }
 
                 //right
-                Vector3 right = new Vector3(rb.velocity.x + inc, rb.velocity.y, rb.velocity.z - inc);
-                if (!Physics.Raycast(transform.position, right, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                Vector3 right = new Vector3(target.x + inc, target.y, target.z - inc);
+                float rightDiff = Vector3.SqrMagnitude(target - right);
+                //Debug.DrawRay(transform.position, right, Color.blue);
+                if (rightDiff < minDiff && !Physics.Raycast(transform.position, right, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
-                    if (Vector3.SqrMagnitude(rb.velocity - right) < minDiff) closestVector = right;
+                    closestVector = right;
+                    minDiff = rightDiff;
                     foundAvoidVector = true;
                 }
 
                 //down
-                Vector3 down = new Vector3(rb.velocity.x, rb.velocity.y - inc, rb.velocity.z - inc);
-                if (!Physics.Raycast(transform.position, down, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                Vector3 down = new Vector3(target.x, target.y - inc, target.z - inc);
+                float downDiff = Vector3.SqrMagnitude(target - down);
+                //Debug.DrawRay(transform.position, down, Color.blue);
+                if (downDiff < minDiff && !Physics.Raycast(transform.position, down, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
-                    if (Vector3.SqrMagnitude(rb.velocity - down) < minDiff) closestVector = down;
+                    closestVector = down;
+                    minDiff = downDiff;
                     foundAvoidVector = true;
                 }
 
                 //left
-                Vector3 left = new Vector3(rb.velocity.x - inc, rb.velocity.y, rb.velocity.z - inc);
-                if (!Physics.Raycast(transform.position, left, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                Vector3 left = new Vector3(target.x - inc, target.y, target.z - inc);
+                //Debug.DrawRay(transform.position, left, Color.blue);
+                if (Vector3.SqrMagnitude(target - left) < minDiff && !Physics.Raycast(transform.position, left, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
-                    if (Vector3.SqrMagnitude(rb.velocity - left) < minDiff) closestVector = left;
+                    closestVector = left;
                     foundAvoidVector = true;
                 }
 
@@ -296,30 +287,11 @@ public class BoidBehaviour : MonoBehaviour {
             }
 
         }
-        /*
-        else //if raycast didn't hit an obstacle
-        {
-            
-            //Debug.Log(GetInstanceID() + "avoiding obstacle");
-            if(avoidTimer > 0) //continue on current avoid vector
-            {
-                avoidTimer--;
-                //Debug.Log("avoid timer = " + avoidTimer);
-                avoidVector = currAvoidGoal;
-            }
-            else //stop avoiding obstacle and reset avoidTimer
-            {
-                avoidTimer = AVOID_TIMER;
-            }
-            
-            return Vector3.zero;
-        }
-        */
 
         return Vector3.zero;
     }
 
-    //Computationally cheaper version of AvoidObstacles which just uses .left/right/up/down/back directions for obstacle avoidance,
+    //Computationally cheaper version of AvoidObstacles which just uses left/right/up/down/back directions for obstacle avoidance,
     //rather than casting rays to find an avoid vector
     Vector3 AvoidObstaclesCheap()
     {
@@ -369,20 +341,43 @@ public class BoidBehaviour : MonoBehaviour {
         Debug.DrawRay(transform.position, closestVector, Color.green);
         return closestVector * obstacleAvoidMultiplier;
     }
+    
     //causes obstacles to emit a repulsive force on the boid
-    /*
     Vector3 ObstacleRepulsion()
     {
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, rb.velocity, out hit, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-        {
-            Debug.DrawRay(transform.position, (transform.position - hit.point) * (100.0f - Vector3.Distance(transform.position, hit.point)));
-            return (transform.position - hit.point) * (100.0f - Vector3.Distance(transform.position, hit.point));
-        }
+        Vector3 avoidVector = Vector3.zero;
 
-        return Vector3.zero;
+        /*
+        if(seenObstacles.Count > 0)
+        {
+            foreach(GameObject obstacle in seenObstacles)
+            {
+                /*
+                RaycastHit hit;
+                if (Physics.Linecast(transform.position, obstacle.transform.position, out hit, LAYER_OBSTACLE))
+                {
+                    avoidVector += (transform.position - hit.point) * (100.0f - Vector3.Distance(transform.position, hit.point));
+                }
+                
+
+                //approximate avoid direction
+                float x = (transform.position.x < obstacle.transform.position.x) ? 1f : -1f;
+                float y = (transform.position.y < obstacle.transform.position.y) ? 1f : -1f;
+                float z = (transform.position.z < obstacle.transform.position.z) ? 1f : -1f;
+                avoidVector += new Vector3(x, y, z);
+            }
+
+            avoidVector /= seenObstacles.Count;
+        }
+        */
+        if(Physics.Raycast(transform.position, rb.velocity, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
+        {
+            avoidVector = -rb.velocity;
+        }
+        Debug.DrawRay(transform.position, avoidVector, Color.yellow);
+        return avoidVector * obstacleAvoidMultiplier;
     }
-    */
+    
 
     Vector3 FollowCursor()
     {
@@ -391,7 +386,7 @@ public class BoidBehaviour : MonoBehaviour {
 
     Vector3 MoveToGoal()
     {
-        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() - transform.position) * goalVectorMultiplier : Vector3.zero;
+        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position) * goalVectorMultiplier : Vector3.zero;
     }
 
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules
@@ -400,41 +395,15 @@ public class BoidBehaviour : MonoBehaviour {
         Vector3 velVector = Vector3.zero;
         Vector3 avoidVector = AvoidObstacles();
 
-        /**DEBUG**/
-        if (CheckInfinity(AvoidObstacles())) Debug.LogWarning("AvoidObstacles() returns NaN");
-        if (CheckInfinity(ReactToOtherBoids())) Debug.LogWarning("ReactToOtherBoids() returns NaN");
-        if (CheckInfinity(FollowCursor())) Debug.LogWarning("FollowCursor() returns NaN");
-        if (CheckInfinity(MoveToGoal())) Debug.LogWarning("MoveToGoal() returns NaN");
-        if (CheckInfinity(ReturnToBounds())) Debug.LogWarning("ReturnToBounds() returns NaN");
-        /**DEBUG**/
-
         if(!(avoidVector == Vector3.zero))
         {
-            return AvoidObstaclesCheap();
+            return avoidVector + ObstacleRepulsion() + ReactToOtherBoids() + ReturnToBounds(); //prioritise avoidance?
         }
         else
         {
-            return ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
-        }
-        /** PRIORITIES (MAY CHANGE - DYNAMIC?):
-         * Avoid obstacles if close to obstacle > avoid other boids = centre boids = match velocity = follow path = follow random goal = return to bounds */
-        //if boid is heading towards an obstacle which is closer than OBSTACLE_CRITICAL_DISTANCE, prioritise avoiding it
-        /*
-        RaycastHit hit;
-        if(isAvoidingObstacle || Physics.Raycast(transform.position, rb.velocity, out hit, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE) 
-            && Vector3.Distance(transform.position, hit.point) < OBSTACLE_CRITICAL_DISTANCE)
-        {
-            velVector = AvoidObstacles() * obstacleAvoidMultiplier;
-        }
-        else
-        {
-            velVector = AvoidObstacles() + ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();
-            //velVector = ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();
+            return ObstacleRepulsion() + ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
         }
 
-        return velVector; */
-
-        //return AvoidObstacles() + ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();
     }
 
     //Limit a vector's magnitude to a certain limit if it is over that limit
@@ -452,6 +421,7 @@ public class BoidBehaviour : MonoBehaviour {
         }
     }
 
+    /*
     //debug function to check if a vector3 contains a NaN value
     bool CheckNaN(Vector3 vec)
     {
@@ -464,4 +434,5 @@ public class BoidBehaviour : MonoBehaviour {
         return float.IsPositiveInfinity(vec.x) || float.IsPositiveInfinity(vec.y) || float.IsPositiveInfinity(vec.z)
             || float.IsNegativeInfinity(vec.x) || float.IsNegativeInfinity(vec.y) || float.IsNegativeInfinity(vec.z);
     }
+    */
 }
