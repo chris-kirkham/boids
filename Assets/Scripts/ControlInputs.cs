@@ -44,7 +44,7 @@ public class ControlInputs : MonoBehaviour
     {
         useMouseFollow = false;
         useRandomGoal = false;
-        useBoundingCoordinates = false;
+        useBoundingCoordinates = true;
 
         spawnNewBoid = false;
         destroyBoid = false;
@@ -67,13 +67,12 @@ public class ControlInputs : MonoBehaviour
     void Update()
     {
         //boid behaviour controls
-        if (Input.GetKeyDown(KeyCode.Alpha1)) useMouseFollow = !useMouseFollow;
+        if (Input.GetKeyDown(KeyCode.Mouse0)) useMouseFollow = !useMouseFollow;
         if (Input.GetKeyDown(KeyCode.Alpha2)) useRandomGoal = !useRandomGoal;
         if (Input.GetKeyDown(KeyCode.Alpha3)) useBoundingCoordinates = !useBoundingCoordinates;
 
-        //boid spawn/destroy - not a toggle, should only be true on the frame the key is pressed
-        spawnNewBoid = (Input.GetKeyDown(KeyCode.Z) && !spawnNewBoid);
-        destroyBoid = (Input.GetKeyDown(KeyCode.X) && !destroyBoid);
+        spawnNewBoid = Input.GetKey(KeyCode.Z);
+        destroyBoid = Input.GetKey(KeyCode.X);
 
         //camera movement
         moveHorizontal = Input.GetAxis("Horizontal");

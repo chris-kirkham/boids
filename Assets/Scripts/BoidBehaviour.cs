@@ -57,6 +57,7 @@ public class BoidBehaviour : MonoBehaviour {
 
         //set initial boid velocity
         rb.velocity = new Vector3(Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit));
+        rb.velocity = rb.velocity.normalized * velocityLimit;
 
         minAdaptiveOverlapRadius = overlapSphereRadius;
         maxAdaptiveOverlapRadius = overlapSphereRadius * 10;
@@ -98,9 +99,9 @@ public class BoidBehaviour : MonoBehaviour {
 
             //find nearby boids/obstacles and add them to seenBoids/seenObstacles
             Collider[] boids = Physics.OverlapSphere(rb.transform.position, overlapSphereRadius, LAYER_BOID);
-            foreach (Collider c in boids)
+            for (int i = 0; i < Mathf.Min(boids.Length, numClosestToCheck + 1); i++) //add up to numClosestToCheck seen boids to seenBoids list;
             {
-                if (c.gameObject != this.gameObject) seenBoids.Add(c.gameObject);
+                if (boids[i].gameObject != this.gameObject) seenBoids.Add(boids[i].gameObject);
             }
 
             Collider[] obstacles = Physics.OverlapSphere(rb.transform.position, OBSTACLE_CHECK_DISTANCE / 2, LAYER_OBSTACLE);
@@ -218,9 +219,21 @@ public class BoidBehaviour : MonoBehaviour {
         //fire a ray in direction of boid's velocity (sqr magnitude of velocity in length; change this?) to see if there is an obstacle in its path.
         //if there is an obstacle in its path (regardless of whether it is currently avoiding a(nother) obstacle,
         //find avoid vector which is closest to either current velocity vector or mouse target, depending on if using mouse follow.
+        Vector3 target;
+        float checkDistance;
+        if (ControlInputs.Instance.useMouseFollow)
+        {
+            target = mouseTarget - transform.position;
+            checkDistance = Vector3.Distance(transform.position, mouseTarget);
+        }
+        else
+        {
+            target = rb.velocity;
+            checkDistance = OBSTACLE_CHECK_DISTANCE;
+        }
+
         RaycastHit hit;
-        Vector3 target = (ControlInputs.Instance.useMouseFollow) ? mouseTarget - transform.position : rb.velocity;
-        if (Physics.Raycast(transform.position, target, out hit, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
+        if (Physics.Raycast(transform.position, target, out hit, checkDistance, LAYER_OBSTACLE))
         {
             int raycastTries = 0;
             float inc = rayIncrement;
@@ -290,57 +303,6 @@ public class BoidBehaviour : MonoBehaviour {
 
         return Vector3.zero;
     }
-
-    //Computationally cheaper version of AvoidObstacles which just uses left/right/up/down/back directions for obstacle avoidance,
-    //rather than casting rays to find an avoid vector
-    Vector3 AvoidObstaclesCheap()
-    {
-        Vector3 closestVector = Vector3.zero;
-
-        //checks whether each cardinal direction avoids the obstacle, and returns the one closest to the boid's velocity if so; returns zero if no avoid vector found 
-        RaycastHit hit;
-        if (Physics.Raycast(transform.position, rb.velocity, out hit, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-        {
-            float minDiff = float.PositiveInfinity;
-
-            float upDiff = Vector3.SqrMagnitude(rb.velocity - Vector3.up);
-            if (!Physics.Raycast(transform.position, Vector3.up, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-            {
-                closestVector = Vector3.up;
-                minDiff = upDiff;
-            }
-
-            float downDiff = Vector3.SqrMagnitude(rb.velocity - Vector3.down);
-            if (downDiff < minDiff && !Physics.Raycast(transform.position, Vector3.down, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-            {
-                closestVector = Vector3.down;
-                minDiff = downDiff;
-            }
-
-            float leftDiff = Vector3.SqrMagnitude(rb.velocity - Vector3.left);
-            if (leftDiff < minDiff && !Physics.Raycast(transform.position, Vector3.left, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-            {
-                closestVector = Vector3.left;
-                minDiff = leftDiff;
-            }
-
-            float rightDiff = Vector3.SqrMagnitude(rb.velocity - Vector3.right);
-            if (rightDiff < minDiff && !Physics.Raycast(transform.position, Vector3.right, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-            {
-                closestVector = Vector3.right;
-                minDiff = rightDiff;
-            }
-
-            float backDiff = Vector3.SqrMagnitude(rb.velocity - Vector3.back);
-            if(backDiff < minDiff && !Physics.Raycast(transform.position, Vector3.right, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE))
-            {
-                closestVector = Vector3.back;
-            }
-        }
-
-        Debug.DrawRay(transform.position, closestVector, Color.green);
-        return closestVector * obstacleAvoidMultiplier;
-    }
     
     //causes obstacles to emit a repulsive force on the boid
     Vector3 ObstacleRepulsion()
@@ -397,11 +359,11 @@ public class BoidBehaviour : MonoBehaviour {
 
         if(!(avoidVector == Vector3.zero))
         {
-            return avoidVector + ObstacleRepulsion() + ReactToOtherBoids() + ReturnToBounds(); //prioritise avoidance?
+            return avoidVector + ReactToOtherBoids(); //prioritise avoidance?
         }
         else
         {
-            return ObstacleRepulsion() + ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
+            return ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
         }
 
     }

@@ -58,10 +58,11 @@
      <Compile Include="Assets\Scripts\BoidSpawner.cs" />
      <Compile Include="Assets\Scripts\CameraController.cs" />
      <Compile Include="Assets\Scripts\ControlInputs.cs" />
-     <Compile Include="Assets\Scripts\HUD_NumBoids.cs" />
      <Compile Include="Assets\Scripts\MouseTargetController.cs" />
      <Compile Include="Assets\Scripts\MouseTargetPosition.cs" />
      <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
+     <Compile Include="Assets\Scripts\UI\HUD_MouseFollow.cs" />
+     <Compile Include="Assets\Scripts\UI\HUD_NumBoids.cs" />
  <Reference Include="Unity.RenderPipelines.Core.Editor">
  <HintPath>C:/Users/Public/Documents/Unity Projects/Boids/Library/ScriptAssemblies/Unity.RenderPipelines.Core.Editor.dll</HintPath>
  </Reference>
