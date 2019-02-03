@@ -1,5 +1,5 @@
 # boids
-## An implementation of the Boids algorithm (Reynolds, C. W. (1987) Flocks, Herds, and Schools: A Distributed Behavioral Model) for Unity.
+#### An implementation of the Boids algorithm (Reynolds, C. W. (1987) Flocks, Herds, and Schools: A Distributed Behavioral Model) for Unity.
 | <img src="README_1.gif"> | <img src="README_2.gif"> | <img src="README_3.gif"> |
 |:----:|:----:|:----:|
 
