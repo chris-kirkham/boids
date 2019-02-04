@@ -17,7 +17,7 @@ X - delete boid </p>
 All individual boid behaviour is handled in *BoidBehaviour.cs*; 
 
 ### Attention range
-Each boid has a sphere around it which could be said to represent its range of attention - if another boid overlaps this sphere, it is added to a list of boids to "pay attention to" on that frame. To save performance, the boids can be set to store and react to only the closest up to *n* boids to it, even if there are more within its attention range. 
+Each boid has a sphere around it which could be said to represent its range of attention - if another boid overlaps this sphere, it is added to a list of boids to react to on that frame. To save performance, the boids can be set to store and react to only the closest (up to) *n* boids to it, even if there are more within its attention range. 
 
 ### Adaptive attention range
 A boid's attention sphere may be set to be of dynamic size; it will grow until it overlaps *n* other boids, then shrink (if necessary) to remain at the minimum size which still overlaps *n* boids. In practice, this allows boids to group together in sub-flocks of a set number of boids (which may not be realistic behaviour in terms of actual birds, but may be useful in certain situations).
