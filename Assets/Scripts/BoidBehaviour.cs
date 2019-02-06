@@ -20,7 +20,8 @@ public class BoidBehaviour : MonoBehaviour {
     public float velocityLimit;
     public int numClosestToCheck = 5;
 
-    private const float VISION_UPDATE_TIME_INTERVAL = 0.1f;
+    private const float BASE_UPDATE_TIME_INTERVAL = 0.1f;
+    private const float UPDATE_TIME_VARIANCE = 0.1f; //vary time between boid updates so not all boids will update on the same frame
     private float updateTime = 0.0f; //used to time next vision update
 
     public bool useMouseFollow;
@@ -46,6 +47,12 @@ public class BoidBehaviour : MonoBehaviour {
     private const int MAX_OBSTACLE_RAYCAST_TRIES = 10; //max number of raycasts the boid will try to find a path around an obstacle
     private float rayIncrement = 10f; //number to increase/decrease the x/y/z (depending on direction) of each raycast by when trying to find path around obstacle
 
+    //idle behaviour
+    private Vector3 idleVec;
+    private const float BASE_IDLE_TIMER = 5.0f;
+    private const float IDLE_TIMER_VARIANCE = BASE_IDLE_TIMER / 2;
+    private float idleTimer = 0.0f; //tracks when to change idle movement vector
+
     //LAYER MASKS
     private const int LAYER_BOID = 1 << 9;
     private const int LAYER_OBSTACLE = 1 << 10;
@@ -56,8 +63,6 @@ public class BoidBehaviour : MonoBehaviour {
         rb = GetComponent<Rigidbody>();
 
         //set initial boid velocity
-        rb.velocity = new Vector3(Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit));
-        rb.velocity = rb.velocity.normalized * velocityLimit;
 
         minAdaptiveOverlapRadius = overlapSphereRadius;
         maxAdaptiveOverlapRadius = overlapSphereRadius * 10;
@@ -88,10 +93,14 @@ public class BoidBehaviour : MonoBehaviour {
     void FixedUpdate()
     {
         updateTime -= Time.deltaTime;
+        idleTimer -= Time.deltaTime;
 
+        UpdateIdle(); //update idle behaviour
+
+        //calculate boid behaviour
         if(updateTime <= 0.0f)
         {
-            updateTime = VISION_UPDATE_TIME_INTERVAL;
+            updateTime = BASE_UPDATE_TIME_INTERVAL + Random.Range(0.0f, UPDATE_TIME_VARIANCE);
 
             //clear seen objects lists before checking again
             seenBoids.Clear();
@@ -246,7 +255,7 @@ public class BoidBehaviour : MonoBehaviour {
                 //up
                 Vector3 up = new Vector3(target.x, target.y + inc, target.z - inc);
                 //Debug.DrawRay(transform.position, up, Color.blue);
-                if (!Physics.Raycast(transform.position, up, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                if (!Physics.Raycast(transform.position, up, checkDistance, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
                     closestVector = up;
                     minDiff = Vector3.SqrMagnitude(target - up);
@@ -257,7 +266,7 @@ public class BoidBehaviour : MonoBehaviour {
                 Vector3 right = new Vector3(target.x + inc, target.y, target.z - inc);
                 float rightDiff = Vector3.SqrMagnitude(target - right);
                 //Debug.DrawRay(transform.position, right, Color.blue);
-                if (rightDiff < minDiff && !Physics.Raycast(transform.position, right, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                if (rightDiff < minDiff && !Physics.Raycast(transform.position, right, checkDistance, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
                     closestVector = right;
                     minDiff = rightDiff;
@@ -268,7 +277,7 @@ public class BoidBehaviour : MonoBehaviour {
                 Vector3 down = new Vector3(target.x, target.y - inc, target.z - inc);
                 float downDiff = Vector3.SqrMagnitude(target - down);
                 //Debug.DrawRay(transform.position, down, Color.blue);
-                if (downDiff < minDiff && !Physics.Raycast(transform.position, down, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                if (downDiff < minDiff && !Physics.Raycast(transform.position, down, checkDistance, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
                     closestVector = down;
                     minDiff = downDiff;
@@ -278,17 +287,15 @@ public class BoidBehaviour : MonoBehaviour {
                 //left
                 Vector3 left = new Vector3(target.x - inc, target.y, target.z - inc);
                 //Debug.DrawRay(transform.position, left, Color.blue);
-                if (Vector3.SqrMagnitude(target - left) < minDiff && !Physics.Raycast(transform.position, left, OBSTACLE_CHECK_DISTANCE, LAYER_OBSTACLE)) //if this raycast doesn't hit 
+                if (Vector3.SqrMagnitude(target - left) < minDiff && !Physics.Raycast(transform.position, left, checkDistance, LAYER_OBSTACLE)) //if this raycast doesn't hit 
                 {
                     closestVector = left;
                     foundAvoidVector = true;
                 }
 
                 //if we found a way/ways around obstacle on this loop, return closestVector
-                //if(closestVector != Vector3.positiveInfinity)
                 if(foundAvoidVector)
                 {
-                    //Debug.Log(closestVector);
                     Debug.DrawRay(transform.position, closestVector, Color.green);
                     return closestVector * obstacleAvoidMultiplier;
                 }
@@ -321,14 +328,6 @@ public class BoidBehaviour : MonoBehaviour {
                     avoidVector += (transform.position - hit.point) * (100.0f - Vector3.Distance(transform.position, hit.point));
                 }
                 
-
-                //approximate avoid direction
-                float x = (transform.position.x < obstacle.transform.position.x) ? 1f : -1f;
-                float y = (transform.position.y < obstacle.transform.position.y) ? 1f : -1f;
-                float z = (transform.position.z < obstacle.transform.position.z) ? 1f : -1f;
-                avoidVector += new Vector3(x, y, z);
-            }
-
             avoidVector /= seenObstacles.Count;
         }
         */
@@ -351,19 +350,31 @@ public class BoidBehaviour : MonoBehaviour {
         return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position) * goalVectorMultiplier : Vector3.zero;
     }
 
+    void UpdateIdle() //updates idleVec with new idle movement vector if idle timer <= 0 (N.B. Idle timer is decremented in FixedUpdate)
+    {
+        if(idleTimer <= 0.0f)
+        {
+            idleTimer = BASE_IDLE_TIMER + Random.Range(-IDLE_TIMER_VARIANCE, IDLE_TIMER_VARIANCE);
+            idleVec = new Vector3(Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit), Random.Range(-velocityLimit, velocityLimit));
+        }
+    }
+
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules
     Vector3 CalcRules()
     {
-        Vector3 velVector = Vector3.zero;
         Vector3 avoidVector = AvoidObstacles();
 
-        if(!(avoidVector == Vector3.zero))
+        if(!(avoidVector == Vector3.zero)) //prioritise obstacle avoidance
         {
-            return avoidVector + ReactToOtherBoids(); //prioritise avoidance?
+            return avoidVector + ObstacleRepulsion() + ReactToOtherBoids(); 
+        }
+        else if(seenBoids.Count == 0 && !ControlInputs.Instance.useMouseFollow) //if no boids nearby, not avoiding an obstacle, and not following mouse, do idle behaviour
+        {
+            return idleVec + ObstacleRepulsion() + ReturnToBounds();
         }
         else
         {
-            return ReactToOtherBoids() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
+            return ReactToOtherBoids() + ObstacleRepulsion() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
         }
 
     }

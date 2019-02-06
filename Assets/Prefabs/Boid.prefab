@@ -135,8 +135,8 @@ MonoBehaviour:
   useAdaptiveOverlapSphere: 1
   boundsAvoidMultiplier: 1
   boidAvoidMultiplier: 3
-  obstacleAvoidMultiplier: 10
+  obstacleAvoidMultiplier: 20
   mouseFollowMultiplier: 0.5
   goalVectorMultiplier: 1
   useBoundingCoordinates: 1
-  boundsSize: 1000
+  boundsSize: 200

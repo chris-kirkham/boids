@@ -6,11 +6,14 @@ public class CameraController : MonoBehaviour
 {
     public float moveSpeed;
     private Quaternion initialRotation;
+
+    private bool isColliding;
     
     // Start is called before the first frame update
     void Start()
     {
         initialRotation = transform.localRotation;
+        isColliding = false;
     }
 
     // Update is called once per frame
@@ -39,4 +42,5 @@ public class CameraController : MonoBehaviour
 
         return xQ * yQ;
     }
+
 }
