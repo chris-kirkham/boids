@@ -14,7 +14,7 @@ Z - spawn boid <br>
 X - delete boid </p>
 
 ## How it works
-All individual boid behaviour is handled in *BoidBehaviour.cs*; 
+All individual boid behaviour is handled in BoidBehaviour.cs; boids are spawned from the BoidController game object, which contains the scripts BoidSpawner.cs and BoidCollectiveController.cs. User input is handled in the singleton class ControlInputs.cs.
 
 ### Attention range
 Each boid has a sphere around it which could be said to represent its range of attention - if another boid overlaps this sphere, it is added to a list of boids to react to on that frame. To save performance, the boids can be set to store and react to only the closest (up to) *n* boids to it, even if there are more within its attention range. 
