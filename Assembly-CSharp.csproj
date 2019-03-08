@@ -53,6 +53,9 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+     <Compile Include="Assets\Scripts\Boid\BoidBehaviour.cs" />
+     <Compile Include="Assets\Scripts\Boid\BoidMovement.cs" />
+     <Compile Include="Assets\Scripts\Boid\BoidVision.cs" />
      <Compile Include="Assets\Scripts\BoidBehaviour.cs" />
      <Compile Include="Assets\Scripts\BoidCollectiveController.cs" />
      <Compile Include="Assets\Scripts\BoidSpawner.cs" />
