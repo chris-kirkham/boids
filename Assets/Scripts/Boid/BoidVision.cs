@@ -10,7 +10,7 @@ public class BoidVision : MonoBehaviour
     /* Boid overlap sphere params */
     public float overlapSphereRadius; //current overlap sphere radius; may be changed if using adaptive overlap sphere
     public bool useAdaptiveOverlapSphere;
-    private float minAdaptiveOverlapRadius, maxAdaptiveOverlapRadius;
+    public float minAdaptiveOverlapRadius, maxAdaptiveOverlapRadius;
     private float adaptiveOverlapSphereInc = 0.5f; //number to increment/decrement adaptive overlap sphere size by if using it
 
     //Can choose to store (and react to during behaviour calculation) a limited number of boids. 0 = store as many as boid sees

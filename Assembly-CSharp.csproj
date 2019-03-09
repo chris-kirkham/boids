@@ -56,7 +56,6 @@
      <Compile Include="Assets\Scripts\Boid\BoidBehaviour.cs" />
      <Compile Include="Assets\Scripts\Boid\BoidMovement.cs" />
      <Compile Include="Assets\Scripts\Boid\BoidVision.cs" />
-     <Compile Include="Assets\Scripts\BoidBehaviour.cs" />
      <Compile Include="Assets\Scripts\BoidCollectiveController.cs" />
      <Compile Include="Assets\Scripts\BoidSpawner.cs" />
      <Compile Include="Assets\Scripts\CameraController.cs" />
@@ -64,6 +63,9 @@
      <Compile Include="Assets\Scripts\MouseTargetController.cs" />
      <Compile Include="Assets\Scripts\MouseTargetPosition.cs" />
      <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
+     <Compile Include="Assets\Scripts\SpatialHash\HashObject.cs" />
+     <Compile Include="Assets\Scripts\SpatialHash\SpatialHash.cs" />
+     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDebug.cs" />
      <Compile Include="Assets\Scripts\UI\HUD_MouseFollow.cs" />
      <Compile Include="Assets\Scripts\UI\HUD_NumBoids.cs" />
  <Reference Include="Unity.RenderPipelines.Core.Editor">

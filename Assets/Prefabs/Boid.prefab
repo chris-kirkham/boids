@@ -14,6 +14,9 @@ GameObject:
   - component: {fileID: 64356080131765628}
   - component: {fileID: 54103664927240968}
   - component: {fileID: 114164988839329578}
+  - component: {fileID: 7738479156176144470}
+  - component: {fileID: 89953140081703309}
+  - component: {fileID: 3318539259151667705}
   m_Layer: 9
   m_Name: Boid
   m_TagString: Boid
@@ -127,16 +130,56 @@ MonoBehaviour:
   mouseTargetObj: {fileID: 11400000, guid: 8aa5c311f49881c4285f6f8049442bf6, type: 2}
   boidAvoidDistance: 3
   obstacleAvoidDistance: 5
-  overlapSphereRadius: 2
-  velocityLimit: 20
   numClosestToCheck: 5
   useMouseFollow: 0
   useRandomGoal: 0
-  useAdaptiveOverlapSphere: 1
   boundsAvoidMultiplier: 1
-  boidAvoidMultiplier: 3
+  boidAvoidMultiplier: 10
   obstacleAvoidMultiplier: 10
   mouseFollowMultiplier: 0.5
   goalVectorMultiplier: 1
   useBoundingCoordinates: 1
   boundsSize: 1000
+--- !u!114 &7738479156176144470
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722337560723314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: dfa8863efcb2f3b49afb6cff2d33a64c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  velocityLimit: 20
+--- !u!114 &89953140081703309
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722337560723314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c6138e1573fda944080494296b330151, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  overlapSphereRadius: 5
+  useAdaptiveOverlapSphere: 1
+  minAdaptiveOverlapRadius: 5
+  maxAdaptiveOverlapRadius: 20
+  maxSeenBoidsToStore: 5
+--- !u!114 &3318539259151667705
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722337560723314}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4fecdc5cfc509b6489e51118c23d9250, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hashName: BoidSpatialHash
