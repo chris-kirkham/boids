@@ -35,7 +35,8 @@ public class BoidSpawner : MonoBehaviour {
 
         //draw spawn area
         Gizmos.color = new Color(0.0f, 1.0f, 1.0f, 0.2f); //translucent cyan
-        Gizmos.DrawCube(transform.position, new Vector3(spawnAreaSize * 2, spawnAreaSize * 2, spawnAreaSize * 2));
+        Gizmos.DrawCube(new Vector3(transform.position.x, transform.position.y + spawnAreaSize, transform.position.z),
+            new Vector3(spawnAreaSize * 2, spawnAreaSize * 2, spawnAreaSize * 2));
     }
 
     void Update()
@@ -55,7 +56,7 @@ public class BoidSpawner : MonoBehaviour {
     //spawn a boid at a random point in a cube around the spawner object
     void SpawnBoid()
     {
-        Vector3 spawnPosition = new Vector3(Random.Range(-spawnAreaSize, spawnAreaSize), Random.Range(-spawnAreaSize, spawnAreaSize), Random.Range(-spawnAreaSize, spawnAreaSize));
+        Vector3 spawnPosition = new Vector3(Random.Range(-spawnAreaSize, spawnAreaSize), Random.Range(0, spawnAreaSize * 2), Random.Range(-spawnAreaSize, spawnAreaSize));
         Vector3 boidPosition = this.transform.position + spawnPosition;
         Quaternion boidRotation = new Quaternion();
         boids.Push(Instantiate(boid, boidPosition, boidRotation));

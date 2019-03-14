@@ -7,6 +7,10 @@ public class BoidVision : MonoBehaviour
 {
     private Rigidbody rb;
 
+    /* Spatial hash reference */
+    public string hashName; //name of spatial hash object to find
+    private SpatialHash hash; //hash in which to store this object
+
     /* Boid overlap sphere params */
     public float overlapSphereRadius; //current overlap sphere radius; may be changed if using adaptive overlap sphere
     public bool useAdaptiveOverlapSphere;
@@ -26,18 +30,39 @@ public class BoidVision : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody>();
+
+        hash = GameObject.Find(hashName).GetComponent<SpatialHash>();
+
+        if (hash == null)
+        {
+            Debug.LogError("BoidVision cannot find SpatialHash by name " + hashName + "!");
+        }
     }
 
     public List<GameObject> GetSeenBoids()
     {
         List<GameObject> seenBoids = new List<GameObject>();
 
+        /*
         Collider[] boids = Physics.OverlapSphere(rb.transform.position, overlapSphereRadius, LAYER_BOID);
         int n = (maxSeenBoidsToStore <= 0) ? boids.Length : Mathf.Min(boids.Length, maxSeenBoidsToStore);
         for (int i = 0; i < n; i++)
         {
             if (boids[i].gameObject != this.gameObject) seenBoids.Add(boids[i].gameObject);
         }
+        */
+
+        //System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
+
+        List<GameObject> boids = hash.GetByRadius(transform.position, overlapSphereRadius);
+        int n = (maxSeenBoidsToStore <= 0) ? boids.Count : Mathf.Min(boids.Count, maxSeenBoidsToStore);
+        for (int i = 0; i < n; i++)
+        {
+            if (boids[i] != this.gameObject) seenBoids.Add(boids[i]);
+        }
+
+        //watch.Stop();
+        //if(Random.Range(0f, 1f) >= 0.9f) Debug.Log("time to for hash.GetByRadius(): " + watch.ElapsedTicks + " ticks");
 
         //ADAPTIVE OVERLAP SPHERE: if current pass didn't find enough boids, increase overlap sphere size; if it did, reduce it
         if (useAdaptiveOverlapSphere)

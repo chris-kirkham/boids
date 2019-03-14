@@ -11,12 +11,12 @@ GameObject:
   - component: {fileID: 4882062810605402}
   - component: {fileID: 33552639954248662}
   - component: {fileID: 23699204275783654}
-  - component: {fileID: 64356080131765628}
   - component: {fileID: 54103664927240968}
   - component: {fileID: 114164988839329578}
   - component: {fileID: 7738479156176144470}
   - component: {fileID: 89953140081703309}
   - component: {fileID: 3318539259151667705}
+  - component: {fileID: 6025916054026283296}
   m_Layer: 9
   m_Name: Boid
   m_TagString: Boid
@@ -83,20 +83,6 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
---- !u!64 &64356080131765628
-MeshCollider:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1722337560723314}
-  m_Material: {fileID: 0}
-  m_IsTrigger: 0
-  m_Enabled: 1
-  serializedVersion: 3
-  m_Convex: 1
-  m_CookingOptions: 14
-  m_Mesh: {fileID: 4300000, guid: 5ccdc28a7d3d24a42b43bd26a45aed5d, type: 3}
 --- !u!54 &54103664927240968
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -139,7 +125,7 @@ MonoBehaviour:
   mouseFollowMultiplier: 0.5
   goalVectorMultiplier: 1
   useBoundingCoordinates: 1
-  boundsSize: 1000
+  boundsSize: 200
 --- !u!114 &7738479156176144470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,7 +138,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dfa8863efcb2f3b49afb6cff2d33a64c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  velocityLimit: 20
+  velocityLimit: 15
 --- !u!114 &89953140081703309
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -165,6 +151,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c6138e1573fda944080494296b330151, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hashName: BoidSpatialHash
   overlapSphereRadius: 5
   useAdaptiveOverlapSphere: 1
   minAdaptiveOverlapRadius: 5
@@ -183,3 +170,16 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hashName: BoidSpatialHash
+--- !u!65 &6025916054026283296
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1722337560723314}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 1.000001, y: 1, z: 0.1}
+  m_Center: {x: -0.020212501, y: 0, z: 0}

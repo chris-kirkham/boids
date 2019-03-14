@@ -27111,7 +27111,7 @@ PrefabInstance:
     - target: {fileID: 6973999833308494727, guid: 0266f9263f940e249978260186741ef4,
         type: 3}
       propertyPath: updateInterval
-      value: 0.2
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 0266f9263f940e249978260186741ef4, type: 3}

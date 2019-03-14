@@ -1,11 +1,56 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using UnityEngine;
 
 //based on https://unionassets.com/blog/spatial-hashing-295
 public class SpatialHash : MonoBehaviour
-{   
+{
+    //class to store list of objects in each cell, plus extra cell info
+    private class Cell
+    {
+        List<GameObject> objs;
+        private const float emptyTimeout = 5f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
+        private float timeout;
+
+        public Cell()
+        {
+            objs = new List<GameObject>();
+            timeout = emptyTimeout;
+        }
+
+        public Cell(GameObject obj)
+        {
+            objs = new List<GameObject> { obj };
+            timeout = emptyTimeout;
+        }
+
+        public Cell(List<GameObject> objs)
+        {
+            this.objs = objs;
+            timeout = emptyTimeout;
+        }
+
+        public void UpdateTimeout(float timePassed)
+        {
+            if (objs.Count > 0)
+            {
+                timeout = emptyTimeout;
+            }
+            else
+            {
+                timeout -= timePassed;
+            }
+        }
+
+        public bool isTimedOut()
+        {
+            return timeout <= 0;
+        }
+
+    }
+
     //public float maxWidth, maxHeight;
 
     public float cellSizeX, cellSizeY, cellSizeZ;
@@ -18,7 +63,8 @@ public class SpatialHash : MonoBehaviour
     public bool useAABB; 
 
     private Dictionary<Vector3Int, List<GameObject>> cells; //<key, bucket> dictionary representing each spatial cell's key and its contents
-    private float emptyCellTimeout = 5f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
+    
+    //private Dictionary<Vector3Int, float> timeouts; //stores the timeout timers of each cell in the hash
 
     //objects to be put into cells by the spatial hash algorithm; each GameObject with a HashObject script (which points to the GameObject with this script) 
     //will add itself to includedObjs on Start() and remove itself on OnDestroy()
@@ -43,11 +89,12 @@ public class SpatialHash : MonoBehaviour
 
         for (int i = -halfCellsX; i < halfCellsX; ++i)
         {
-            for (int j = -halfCellsY; j < halfCellsY; ++j)
+            for (int j = 0; j < initNumCellsY; ++j)
             {
                 for (int k = -halfCellsZ; k < halfCellsZ; ++k)
                 {
-                    cells.Add(Key(new Vector3(i * cellSizeX, j * cellSizeY, k * cellSizeZ)), new List<GameObject>());
+                    Vector3Int key = Key(new Vector3(i * cellSizeX, j * cellSizeY, k * cellSizeZ));
+                    cells.Add(key, new List<GameObject>()); //initialise empty cell
                 }
             }
         }
@@ -108,10 +155,23 @@ public class SpatialHash : MonoBehaviour
     }
     */
 
-
     void Update()
     {
-        if(updateInterval > 0) //update interval set - update every updateInterval seconds
+        //delete timed-out cells
+        /*
+        List<Vector3Int> cellsToRemove = new List<Vector3Int>();
+
+        foreach (KeyValuePair<Vector3Int, Cell> item in cells)
+        {
+            if (item.Value.isTimedOut()) cellsToRemove.Add(item.Key);
+        }
+
+        foreach (Vector3Int key in cellsToRemove)
+        {
+            cells.Remove(key);
+        }
+        */
+        if (updateInterval > 0) //update interval set - update every updateInterval seconds
         {
             updateTime -= Time.deltaTime;
 
@@ -130,9 +190,13 @@ public class SpatialHash : MonoBehaviour
 
     private void UpdateHash()
     {
+        Stopwatch watch = Stopwatch.StartNew();
+
         ClearBuckets();
 
-        
+        watch.Stop();
+        UnityEngine.Debug.Log("time to clear buckets: " + watch.ElapsedTicks + " ticks");
+
         if(!useAABB)
         {
             foreach (GameObject obj in includedObjs)
@@ -147,6 +211,8 @@ public class SpatialHash : MonoBehaviour
                 //AddByAABB
             }
         }
+
+       
         
     }
 
@@ -321,15 +387,21 @@ public class SpatialHash : MonoBehaviour
     //generate a key for the given GameObject (using its transform.position)
     private Vector3Int Key(GameObject obj)
     {
-        return new Vector3Int(Mathf.FloorToInt(obj.transform.position.x / cellSizeX), 
-            Mathf.FloorToInt(obj.transform.position.y / cellSizeY),
-            Mathf.FloorToInt(obj.transform.position.z / cellSizeZ));
+        return new Vector3Int(FastFloor(obj.transform.position.x / cellSizeX), 
+            FastFloor(obj.transform.position.y / cellSizeY),
+            FastFloor(obj.transform.position.z / cellSizeZ));
     }
 
     //generate a key for the given Vector3
     private Vector3Int Key(Vector3 pos)
     {
-        return new Vector3Int(Mathf.FloorToInt(pos.x / cellSizeX), Mathf.FloorToInt(pos.y / cellSizeY), Mathf.FloorToInt(pos.z / cellSizeZ));
+        return new Vector3Int(FastFloor(pos.x / cellSizeX), FastFloor(pos.y / cellSizeY), FastFloor(pos.z / cellSizeZ));
+    }
+
+    //from https://www.codeproject.com/Tips/700780/Fast-floor-ceiling-functions
+    private int FastFloor(float f)
+    {
+        return (int)(f + 32768f) - 32768;
     }
 
     /*
@@ -337,9 +409,9 @@ public class SpatialHash : MonoBehaviour
     //see https://unionassets.com/blog/spatial-hashing-295 for hash function
     private int Key(GameObject o)
     {
-        return ((Mathf.FloorToInt(o.transform.position.x / cellSizeX) * 73856093) ^
-                (Mathf.FloorToInt(o.transform.position.y / cellSizeY) * 19349663) ^
-                (Mathf.FloorToInt(o.transform.position.z / cellSizeZ) * 83492791));
+        return ((FastFloor(o.transform.position.x / cellSizeX) * 73856093) ^
+                (FastFloor(o.transform.position.y / cellSizeY) * 19349663) ^
+                (FastFloor(o.transform.position.z / cellSizeZ) * 83492791));
     }
 
     //generate a key for the given Vector3
@@ -347,9 +419,9 @@ public class SpatialHash : MonoBehaviour
     private int Key(Vector3 pos)
     {
         
-        return ((Mathf.FloorToInt(pos.x / cellSizeX) * 73856093) ^
-                (Mathf.FloorToInt(pos.y / cellSizeY) * 19349663) ^
-                (Mathf.FloorToInt(pos.z / cellSizeZ) * 83492791));
+        return ((FastFloor(pos.x / cellSizeX) * 73856093) ^
+                (FastFloor(pos.y / cellSizeY) * 19349663) ^
+                (FastFloor(pos.z / cellSizeZ) * 83492791));
     }
     */
 
