@@ -162,7 +162,11 @@ public class BoidBehaviour : MonoBehaviour {
         Vector3 centre = Vector3.zero;
         Vector3 velocityMatch = Vector3.zero;
 
-        if (seenBoids.Count > 0) //this function shouldn't be called if there are no seen boids, but check again here to avoid divide-by-zero errors
+        if (seenBoids.Count == 0)
+        {
+            return Vector3.zero;
+        }
+        else
         {
             //check if numClosestToCheck > number of visible boids
             int numToCheck = Mathf.Min(numClosestToCheck, seenBoids.Count);
@@ -285,50 +289,20 @@ public class BoidBehaviour : MonoBehaviour {
     //causes the boid to repel itself from obstacles closer than OBSTACLE_CRITICAL_DISTANCE
     Vector3 ObstacleRepulsion()
     {
-        Vector3 avoidVector = Vector3.zero;
+        Vector3 repulsionVec = Vector3.zero;
 
         /* check cardinal directions for close objects */
-        //forward
-        if(Physics.Raycast(transform.position, transform.forward, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
-        {
-            avoidVector += -transform.forward;
-        }
+        if (Physics.Raycast(transform.position, transform.forward, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += -transform.forward; //forward
+        if (Physics.Raycast(transform.position, -transform.forward, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += transform.forward; //back
+        if (Physics.Raycast(transform.position, -transform.right, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += transform.right; //left
+        if (Physics.Raycast(transform.position, transform.right, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += -transform.right; //right
+        if (Physics.Raycast(transform.position, transform.up, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += -transform.up; //up
+        if (Physics.Raycast(transform.position, -transform.up, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += transform.up; //down
 
-        //back
-        if (Physics.Raycast(transform.position, -transform.forward, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
-        {
-            avoidVector += transform.forward;
-        }
-
-        //left
-        if (Physics.Raycast(transform.position, -transform.right, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
-        {
-            avoidVector += transform.right;
-        }
-
-        //right
-        if (Physics.Raycast(transform.position, transform.right, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
-        {
-            avoidVector += -transform.right;
-        }
-
-        //up
-        if (Physics.Raycast(transform.position, transform.up, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
-        {
-            avoidVector += -transform.up;
-        }
-
-        //down
-        if (Physics.Raycast(transform.position, -transform.up, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE))
-        {
-            avoidVector += transform.up;
-        }
-
-        Debug.DrawRay(transform.position, avoidVector, Color.yellow);
-        return avoidVector * obstacleAvoidMultiplier;
+        Debug.DrawRay(transform.position, repulsionVec, Color.yellow);
+        return repulsionVec * obstacleAvoidMultiplier * 1000;
     }
     
-
     Vector3 FollowCursor()
     {
         return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position) * mouseFollowMultiplier : Vector3.zero;
@@ -354,7 +328,7 @@ public class BoidBehaviour : MonoBehaviour {
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules
     Vector3 CalcRules()
     {
-        Vector3 avoidVector = AvoidObstacles();
+        Vector3 avoidVector = AvoidObstacles(); //non-zero if boid is heading towards an obstacle
 
         if(!(avoidVector == Vector3.zero)) //prioritise obstacle avoidance
         {

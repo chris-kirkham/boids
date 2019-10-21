@@ -114,18 +114,18 @@ MonoBehaviour:
   boidCollectiveController: {fileID: 114091617945803554, guid: b987e4eecfe69d34b9e9ab2c40e4a51a,
     type: 3}
   mouseTargetObj: {fileID: 11400000, guid: 8aa5c311f49881c4285f6f8049442bf6, type: 2}
-  boidAvoidDistance: 3
-  obstacleAvoidDistance: 5
+  boidAvoidDistance: 5
+  obstacleAvoidDistance: 10
   numClosestToCheck: 5
   useMouseFollow: 0
   useRandomGoal: 0
   boundsAvoidMultiplier: 1
-  boidAvoidMultiplier: 10
-  obstacleAvoidMultiplier: 10
+  boidAvoidMultiplier: 100
+  obstacleAvoidMultiplier: 100
   mouseFollowMultiplier: 0.5
   goalVectorMultiplier: 1
   useBoundingCoordinates: 1
-  boundsSize: 200
+  boundsSize: 300
 --- !u!114 &7738479156176144470
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -152,11 +152,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hashName: BoidSpatialHash
-  overlapSphereRadius: 5
+  overlapSphereRadius: 1
   useAdaptiveOverlapSphere: 1
-  minAdaptiveOverlapRadius: 5
-  maxAdaptiveOverlapRadius: 20
+  minAdaptiveOverlapRadius: 1
+  maxAdaptiveOverlapRadius: 50
   maxSeenBoidsToStore: 5
+  useFastHashCheck: 1
 --- !u!114 &3318539259151667705
 MonoBehaviour:
   m_ObjectHideFlags: 0

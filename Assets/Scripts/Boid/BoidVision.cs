@@ -21,7 +21,10 @@ public class BoidVision : MonoBehaviour
     public int maxSeenBoidsToStore = 5;
 
     /* Obstacle overlap sphere params */
-    private const float OBSTACLE_CHECK_DISTANCE = 50.0f; //distance from boid to cast ray to check if boid is heading towards an obstacle
+    private const float OBSTACLE_CHECK_DISTANCE = 50.0f;
+
+    /* use fast (but simple and inaccurate) spatial check - just return other boids from the hash this boid is in */
+    public bool useFastHashCheck;
 
     /* Layer masks */
     private const int LAYER_BOID = 1 << 9;
@@ -39,6 +42,12 @@ public class BoidVision : MonoBehaviour
         }
     }
 
+    void OnDrawGizmos()
+    {
+        //Gizmos.color = new Color(0f, 0f, 1f, 0.2f);
+        //Gizmos.DrawSphere(transform.position, overlapSphereRadius);
+    }
+
     public List<GameObject> GetSeenBoids()
     {
         List<GameObject> seenBoids = new List<GameObject>();
@@ -54,13 +63,22 @@ public class BoidVision : MonoBehaviour
 
         //System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
 
-        List<GameObject> boids = hash.GetByRadius(transform.position, overlapSphereRadius);
+        List<GameObject> boids = new List<GameObject>();
+        if(useFastHashCheck)
+        {
+            boids = hash.Get(transform.position);
+        } 
+        else
+        {
+            boids = hash.GetByRadius(transform.position, overlapSphereRadius);
+        }
+
         int n = (maxSeenBoidsToStore <= 0) ? boids.Count : Mathf.Min(boids.Count, maxSeenBoidsToStore);
         for (int i = 0; i < n; i++)
         {
             if (boids[i] != this.gameObject) seenBoids.Add(boids[i]);
         }
-
+        
         //watch.Stop();
         //if(Random.Range(0f, 1f) >= 0.9f) Debug.Log("time to for hash.GetByRadius(): " + watch.ElapsedTicks + " ticks");
 

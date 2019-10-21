@@ -10,7 +10,7 @@ public class SpatialHash : MonoBehaviour
     //class to store list of objects in each cell, plus extra cell info
     private class Cell
     {
-        List<GameObject> objs;
+        private List<GameObject> objs;
         private const float emptyTimeout = 5f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
         private float timeout;
 
@@ -32,6 +32,21 @@ public class SpatialHash : MonoBehaviour
             timeout = emptyTimeout;
         }
 
+        public List<GameObject> GetObjs()
+        {
+            return objs;
+        }
+
+        public void Add(GameObject obj)
+        {
+            objs.Add(obj);
+        }
+
+        public void Clear()
+        {
+            objs.Clear();
+        }
+
         public void UpdateTimeout(float timePassed)
         {
             if (objs.Count > 0)
@@ -44,9 +59,14 @@ public class SpatialHash : MonoBehaviour
             }
         }
 
-        public bool isTimedOut()
+        public bool IsTimedOut()
         {
             return timeout <= 0;
+        }
+
+        public bool IsEmpty()
+        {
+            return objs.Count == 0;
         }
 
     }
@@ -62,7 +82,7 @@ public class SpatialHash : MonoBehaviour
     //false = add to cells by transform.position (faster, good for very small objects), true = add to cells by AABB (slower, more accurately represents large objects)
     public bool useAABB; 
 
-    private Dictionary<Vector3Int, List<GameObject>> cells; //<key, bucket> dictionary representing each spatial cell's key and its contents
+    private Dictionary<Vector3Int, Cell> cells; //<key, bucket> dictionary representing each spatial cell's key and its contents
     
     //private Dictionary<Vector3Int, float> timeouts; //stores the timeout timers of each cell in the hash
 
@@ -79,7 +99,7 @@ public class SpatialHash : MonoBehaviour
         includedObjs = new HashSet<GameObject>();
 
         //initialise dictionary with initial capacity = number of initial cells
-        cells = new Dictionary<Vector3Int, List<GameObject>>(initNumCellsX * initNumCellsY * initNumCellsZ);
+        cells = new Dictionary<Vector3Int, Cell>(initNumCellsX * initNumCellsY * initNumCellsZ);
 
         //add keys for initial cells and initialise corresponding empty buckets 
         //N.B. goes from (-initNumCellsX/Y/Z / 2) to (+initNumCellsX/Y/Z / 2) so the center of the hash is at the position of the attached GameObject
@@ -94,7 +114,7 @@ public class SpatialHash : MonoBehaviour
                 for (int k = -halfCellsZ; k < halfCellsZ; ++k)
                 {
                     Vector3Int key = Key(new Vector3(i * cellSizeX, j * cellSizeY, k * cellSizeZ));
-                    cells.Add(key, new List<GameObject>()); //initialise empty cell
+                    cells.Add(key, new Cell()); //initialise empty cell
                 }
             }
         }
@@ -158,19 +178,20 @@ public class SpatialHash : MonoBehaviour
     void Update()
     {
         //delete timed-out cells
-        /*
         List<Vector3Int> cellsToRemove = new List<Vector3Int>();
 
         foreach (KeyValuePair<Vector3Int, Cell> item in cells)
         {
-            if (item.Value.isTimedOut()) cellsToRemove.Add(item.Key);
+            item.Value.UpdateTimeout(Time.deltaTime);
+            if (item.Value.IsTimedOut()) cellsToRemove.Add(item.Key);
         }
 
         foreach (Vector3Int key in cellsToRemove)
         {
             cells.Remove(key);
         }
-        */
+        
+        //update cells at either set update interval or every frame
         if (updateInterval > 0) //update interval set - update every updateInterval seconds
         {
             updateTime -= Time.deltaTime;
@@ -185,17 +206,16 @@ public class SpatialHash : MonoBehaviour
         {
             UpdateHash();
         }
-            
     }
 
     private void UpdateHash()
     {
-        Stopwatch watch = Stopwatch.StartNew();
+        //Stopwatch watch = Stopwatch.StartNew();
 
         ClearBuckets();
 
-        watch.Stop();
-        UnityEngine.Debug.Log("time to clear buckets: " + watch.ElapsedTicks + " ticks");
+        //watch.Stop();
+        //UnityEngine.Debug.Log("time to clear buckets: " + watch.ElapsedTicks + " ticks");
 
         if(!useAABB)
         {
@@ -219,18 +239,18 @@ public class SpatialHash : MonoBehaviour
     //inserts a GameObject into the correct bucket by its transform.position only (i.e. not taking into account its size, won't be added to more than one bucket);
     //this is faster than adding an object to the bucket(s) its AABB overlaps, but will of course cause inaccurate results for big objects.
     //Use only on very small objects (like boids)
-    public void AddByPoint(GameObject o)
+    public void AddByPoint(GameObject obj)
     {
-        Vector3Int key = Key(o);
+        Vector3Int key = Key(obj);
         if(cells.ContainsKey(key))
         {
-            cells[key].Add(o);
+            cells[key].Add(obj);
         }
         else
         {
             //NB. dict[key] = value creates a new key if it doesn't already exist, dict.Add() creates a new key/value and throws an exception if it already exists
-            //buckets[key] = new List<GameObject> { o };
-            cells.Add(key, new List<GameObject> { o });
+            //buckets[key] = new List<GameObject> { obj };
+            cells.Add(key, new Cell(obj));
         }
     }
 
@@ -248,14 +268,14 @@ public class SpatialHash : MonoBehaviour
     //returns a list of all objects in buckets[key], or empty list if key isn't in the dictionary
     public List<GameObject> Get(Vector3Int key)
     {
-        return cells.ContainsKey(key) ? cells[key] : new List<GameObject>();
+        return cells.ContainsKey(key) ? cells[key].GetObjs() : new List<GameObject>();
     }
     
     //returns a list of all objects in the cell which contains pos, or empty list if pos is not a coordinate in an existing cell 
     public List<GameObject> Get(Vector3 pos)
     {
         Vector3Int key = Key(pos);
-        return cells.ContainsKey(key) ? cells[key] : new List<GameObject>();
+        return cells.ContainsKey(key) ? cells[key].GetObjs() : new List<GameObject>();
     }
 
     //returns a list of GameObjects <= r distance from pos. Does NOT remove duplicates (big objects added to more than one bucket by AddByAABB) 
@@ -326,48 +346,52 @@ public class SpatialHash : MonoBehaviour
     {
         List<Vector3Int> nonEmptyCells = new List<Vector3Int>();
 
-        foreach(KeyValuePair<Vector3Int, List<GameObject>> item in cells)
+        foreach(KeyValuePair<Vector3Int, Cell> item in cells)
         {
-            if (item.Value.Count() > 0) nonEmptyCells.Add(item.Key);
+            if (!item.Value.IsEmpty()) nonEmptyCells.Add(item.Key);
         }
 
         return nonEmptyCells;
+    }
+
+    //returns a list of cells not containing objects
+    public List<Vector3Int> GetEmptyCells()
+    {
+        List<Vector3Int> emptyCells = new List<Vector3Int>();
+
+        foreach (KeyValuePair<Vector3Int, Cell> item in cells)
+        {
+            if (item.Value.IsEmpty()) emptyCells.Add(item.Key);
+        }
+
+        return emptyCells;
     }
 
     //returns a list of the world positions of cells in the spatial hash
-    public List<Vector3Int> GetCellPositions()
+    public List<Vector3Int> GetCellKeys()
     {
-        List<Vector3Int> cellPoss =  cells.Keys.ToList();
-
-        foreach(Vector3Int cell in cellPoss)
-        {
-
-        }
-
-        return cellPoss;
+        return cells.Keys.ToList();
     }
 
     //returns a list of the world positions of cells in the spatial hash containing objects
-    public List<Vector3Int> GetNonEmptyCellPositions()
+    public List<Vector3Int> GetNonEmptyCellKeys()
     {
-        List<Vector3Int> nonEmptyCells = new List<Vector3Int>();
+        List<Vector3Int> keys = new List<Vector3Int>();
 
-        foreach (KeyValuePair<Vector3Int, List<GameObject>> item in cells)
+        foreach (KeyValuePair<Vector3Int, Cell> item in cells)
         {
-            if (item.Value.Count() > 0) nonEmptyCells.Add(item.Key);
+            if (!item.Value.IsEmpty()) keys.Add(item.Key);
         }
 
-        return nonEmptyCells;
+        return keys;
     }
 
     //Clears each bucket in the buckets dictionary. Does not delete the buckets themselves
     public void ClearBuckets()
     {
-        List<Vector3Int> keys = cells.Keys.ToList();
-
-        foreach(Vector3Int key in keys)
+        foreach(KeyValuePair<Vector3Int, Cell> bucket in cells)
         {
-            cells[key].Clear();
+            bucket.Value.Clear();
         }
     }
 
@@ -377,11 +401,15 @@ public class SpatialHash : MonoBehaviour
         includedObjs.Add(obj);
     }
 
-    //Removes an object from list of objects to hash (NOT from any cell in the hash - this is handled when hash is updated. Remove is called by a HashObject
-    //when it is destroyed)
+    //Removes an object from list of objects to hash and from its cell object list in the hash itself
+    //N.B. objects with the HashObject script call this function when they are destroyed. It is necessary to 
+    //remove the destroyed object from the hash immediately, even though it would be removed anyway on the next hash update,
+    //because other scripts could try to get the now-destroyed object from the hash before it is updated
     public void Remove(GameObject obj)
     {
         includedObjs.Remove(obj);
+        Vector3Int key = Key(obj.transform.position);
+        if (cells.ContainsKey(key)) cells[key].GetObjs().Remove(obj);
     }
 
     //generate a key for the given GameObject (using its transform.position)

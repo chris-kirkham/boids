@@ -23,6 +23,9 @@ public class ControlInputs : MonoBehaviour
     public float rotationX, rotationY;
     private float lookSpeedX = 1.0f, lookSpeedY = 1.0f;
 
+    //spatial hash debug visualisers
+    public bool drawCellOutlines, drawCellCentres, highlightActiveCells;
+
     private bool debug = false;
 
     void Awake()
@@ -42,19 +45,28 @@ public class ControlInputs : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
+        //boid behaviour
         useMouseFollow = false;
         useRandomGoal = false;
         useBoundingCoordinates = true;
 
+        //boid spawning/destruction
         spawnNewBoid = false;
         destroyBoid = false;
 
+        //camera behaviour
         useMouseLook = false;
         moveHorizontal = Input.GetAxis("Horizontal");
         moveVertical = Input.GetAxis("Vertical");
 
+        //camera rotation
         rotationX = 0.0f;
         rotationY = 0.0f;
+
+        //spatial hash debug visualisers
+        drawCellOutlines = false;
+        drawCellCentres = false;
+        highlightActiveCells = false;
     }
 
     void OnDrawGizmos()
@@ -85,6 +97,10 @@ public class ControlInputs : MonoBehaviour
             rotationX += Input.GetAxis("Mouse X") * lookSpeedX;
             rotationY += Input.GetAxis("Mouse Y") * lookSpeedY;
         }
+
+        //spatial hash debug visualisers
+        if (Input.GetKeyDown(KeyCode.H)) drawCellOutlines = !drawCellOutlines;
+        if (Input.GetKeyDown(KeyCode.J)) highlightActiveCells = !highlightActiveCells;
 
     }
 }
