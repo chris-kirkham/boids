@@ -60,6 +60,7 @@ MeshRenderer:
   m_MotionVectors: 1
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
+  m_RayTracingMode: 2
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -71,6 +72,7 @@ MeshRenderer:
   m_ProbeAnchor: {fileID: 0}
   m_LightProbeVolumeOverride: {fileID: 0}
   m_ScaleInLightmap: 1
+  m_ReceiveGI: 1
   m_PreserveUVs: 0
   m_IgnoreNormalsForChartDetection: 0
   m_ImportantGI: 0
@@ -113,7 +115,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   boidCollectiveController: {fileID: 114091617945803554, guid: b987e4eecfe69d34b9e9ab2c40e4a51a,
     type: 3}
-  mouseTargetObj: {fileID: 11400000, guid: 8aa5c311f49881c4285f6f8049442bf6, type: 2}
+  mouseTargetObj: {fileID: 11400000, guid: ae7943ed48c50944dad07c6463595d84, type: 2}
   boidAvoidDistance: 5
   obstacleAvoidDistance: 10
   numClosestToCheck: 5
@@ -135,7 +137,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 1722337560723314}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: dfa8863efcb2f3b49afb6cff2d33a64c, type: 3}
+  m_Script: {fileID: 11500000, guid: ccf0c64415ed8b4468d93a34bc57d644, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   velocityLimit: 15
