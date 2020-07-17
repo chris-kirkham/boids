@@ -8,7 +8,7 @@ public class BoidCollectiveController : MonoBehaviour {
     public const float GOAL_UPDATE_TIME_INTERVAL = 10.0f;
     public const float VELOCITY_LIMIT = 10.0f;
     private float goalUpdateTime = 0.0f;
-    private Vector3 goalVector = new Vector3();
+    private Vector3 goalDir = new Vector3();
 
     // Use this for initialization
     void Start () {
@@ -31,13 +31,12 @@ public class BoidCollectiveController : MonoBehaviour {
 
     public void SetNewRandomGoal()
     {
-        goalVector = new Vector3(Random.Range(-VELOCITY_LIMIT, VELOCITY_LIMIT), Random.Range(-VELOCITY_LIMIT, VELOCITY_LIMIT), Random.Range(-VELOCITY_LIMIT, VELOCITY_LIMIT));
-        goalVector = (goalVector / goalVector.magnitude) * VELOCITY_LIMIT; //scale goal vector to maximum velocity
-        //Debug.Log("Goal vector = " + goalVector);
+        goalDir = new Vector3(Random.Range(-VELOCITY_LIMIT, VELOCITY_LIMIT), Random.Range(-VELOCITY_LIMIT, VELOCITY_LIMIT), Random.Range(-VELOCITY_LIMIT, VELOCITY_LIMIT));
+        goalDir = (goalDir / goalDir.magnitude) * VELOCITY_LIMIT; //scale goal vector to maximum velocity
     }
 
     public Vector3 GetGoal()
     {
-        return goalVector;
+        return goalDir;
     }
 }
