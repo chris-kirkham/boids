@@ -2,22 +2,22 @@
 using System.Collections.Generic;
 using Unity.Jobs;
 using UnityEngine;
+using UnityEngine.EventSystems;
 
-[RequireComponent(typeof(BoidVision))]
-[RequireComponent(typeof(BoidMovement))]
-[RequireComponent(typeof(Rigidbody))]
+//[RequireComponent(typeof(BoidVision))]
+//[RequireComponent(typeof(BoidMovement))]
 public class BoidBehaviour : MonoBehaviour {
 
     private BoidVision boidVision;
     private BoidMovement boidMovement;
     public BoidCollectiveController boidCollectiveController;
 
-    Rigidbody rb;
-
     public MouseTargetPosition mouseTargetObj; //ScriptableObject which holds mouse target position, if using mouse following
     private Vector3 mouseTarget; //convenience var to hold mouse target position
 
-    public float boidAvoidDistance; 
+    public float boidAvoidDistance;
+    public bool usePreemptiveObstacleAvoidance = false;
+    public bool useObstacleRepulsion = true;
     public float obstacleAvoidDistance;
     public int numClosestToCheck = 5;
 
@@ -57,14 +57,16 @@ public class BoidBehaviour : MonoBehaviour {
     private const int LAYER_BOID = 1 << 9;
     private const int LAYER_OBSTACLE = 1 << 10;
 
+    //boid move direction - not updated every tick, but stored so it can be used
+    private Vector3 moveDirection = Vector3.zero;
+
     // Use this for initialization
     void Start () {
 
         boidVision = GetComponent<BoidVision>();
         boidMovement = GetComponent<BoidMovement>();
-        rb = GetComponent<Rigidbody>();
-
-        //set initial boid velocity
+        
+        //TODO: set initial boid velocity
 
         float halfBoundsSize = boundsSize / 2;
         positiveBounds = new Vector3(halfBoundsSize, halfBoundsSize, halfBoundsSize);
@@ -90,9 +92,11 @@ public class BoidBehaviour : MonoBehaviour {
 
             boidVision.UpdateSeenBoids();
 
-            boidMovement.MoveBoid(CalcRules());
-            transform.right = -rb.velocity.normalized; //rotate boid to face movement direction
+            moveDirection = CalcRules();
         }
+
+        boidMovement.MoveBoid(moveDirection);
+        transform.right = Vector3.Lerp(transform.right, -moveDirection, 100f * Time.deltaTime); //rotate boid to face movement direction
     }
 
     Vector3 ReturnToBounds()
@@ -162,18 +166,18 @@ public class BoidBehaviour : MonoBehaviour {
                     Debug.DrawLine(transform.position, boidVision.SeenBoids[i].transform.position, Color.cyan);
                 }
 
-                centre += boidVision.SeenBoids[i].transform.position - transform.position; //move towards centre of nearby boids
-                velocityMatch += boidVision.SeenBoids[i].GetComponent<Rigidbody>().velocity; //match velocity with nearby boids
-                
+                //move towards centre of nearby boids
+                centre += boidVision.SeenBoids[i].transform.position - transform.position;
+
+                //match velocity with nearby boids
+                velocityMatch += boidVision.SeenBoids[i].GetComponent<BoidMovement>().GetVelocity(); 
             }
 
             centre = centre / boidVision.SeenBoids.Count;
             velocityMatch = velocityMatch / boidVision.SeenBoids.Count;
         }
         
-        //Debug.Log("bounds avoid = " + boundsAvoidVector + ", avoid = " + avoidVector + ", centre mass = " + centre + ", match velocities = " + velocityMatch);
         return (boidAvoidVector * boidAvoidMultiplier) + centre + velocityMatch;
-
     }
 
     //Check if the boid is heading towards an obstacle; if so, fire rays out in increasing angles to the left, right,
@@ -195,7 +199,7 @@ public class BoidBehaviour : MonoBehaviour {
         }
         else
         {
-            target = rb.velocity;
+            target = boidMovement.GetVelocity();
             checkDistance = OBSTACLE_CHECK_DISTANCE;
         }
 
@@ -208,6 +212,7 @@ public class BoidBehaviour : MonoBehaviour {
             Vector3 closestVector = Vector3.positiveInfinity;
             bool foundAvoidVector = false;
             float minDiff = Mathf.Infinity;
+
             while (!foundAvoidVector && raycastTries <= MAX_OBSTACLE_RAYCAST_TRIES) 
             {
                 //up
@@ -271,15 +276,19 @@ public class BoidBehaviour : MonoBehaviour {
     {
         Vector3 repulsionVec = Vector3.zero;
 
-        /* check cardinal directions for close objects */
+        /*
+        //check cardinal directions for close objects
         if (Physics.Raycast(transform.position, transform.forward, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += -transform.forward; //forward
         if (Physics.Raycast(transform.position, -transform.forward, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += transform.forward; //back
         if (Physics.Raycast(transform.position, -transform.right, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += transform.right; //left
         if (Physics.Raycast(transform.position, transform.right, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += -transform.right; //right
         if (Physics.Raycast(transform.position, transform.up, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += -transform.up; //up
         if (Physics.Raycast(transform.position, -transform.up, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec += transform.up; //down
+        */
 
-        Debug.DrawRay(transform.position, repulsionVec, Color.yellow);
+        if (Physics.Raycast(transform.position, boidMovement.GetVelocity(), out RaycastHit hit, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec = hit.normal;
+        //Debug.DrawRay(transform.position, repulsionVec, Color.yellow,  0.2f);
+
         return repulsionVec * obstacleAvoidMultiplier * 1000;
     }
     
@@ -299,29 +308,28 @@ public class BoidBehaviour : MonoBehaviour {
         {
             idleTimer = BASE_IDLE_TIMER + Random.Range(-IDLE_TIMER_VARIANCE, IDLE_TIMER_VARIANCE);
             idleVec = new Vector3(
-                Random.Range(-boidMovement.velocityLimit, boidMovement.velocityLimit),
-                Random.Range(-boidMovement.velocityLimit, boidMovement.velocityLimit),
-                Random.Range(-boidMovement.velocityLimit, boidMovement.velocityLimit));
+                Random.Range(-boidMovement.maxSpeed, boidMovement.maxSpeed),
+                Random.Range(-boidMovement.maxSpeed, boidMovement.maxSpeed),
+                Random.Range(-boidMovement.maxSpeed, boidMovement.maxSpeed));
         }
     }
 
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules
     Vector3 CalcRules()
     {
-        Vector3 avoidVector = AvoidObstacles(); //non-zero if boid is heading towards an obstacle
-
+        Vector3 avoidVector = usePreemptiveObstacleAvoidance ? AvoidObstacles() : Vector3.zero; //non-zero if using obstacle avoidance and boid is heading towards an obstacle
+        Vector3 repulsionVector = useObstacleRepulsion ? ObstacleRepulsion() : Vector3.zero;
         if(!(avoidVector == Vector3.zero)) //prioritise obstacle avoidance
         {
-            return avoidVector + ObstacleRepulsion() + ReactToOtherBoids(); 
+            return avoidVector + repulsionVector + ReactToOtherBoids(); 
         }
         else if(boidVision.SeenBoids.Count == 0 && !ControlInputs.Instance.useMouseFollow) //if no boids nearby, not avoiding an obstacle, and not following mouse, do idle behaviour
         {
-            return idleVec + ObstacleRepulsion() + ReturnToBounds();
+            return idleVec + repulsionVector + ReturnToBounds();
         }
         else
         {
-            return ReactToOtherBoids() + ObstacleRepulsion() + FollowCursor() + MoveToGoal() + ReturnToBounds();  
+            return ReactToOtherBoids() + repulsionVector + FollowCursor() + MoveToGoal() + ReturnToBounds();  
         }
-
     }
 }

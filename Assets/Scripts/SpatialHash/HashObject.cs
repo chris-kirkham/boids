@@ -11,7 +11,6 @@ public class HashObject : MonoBehaviour
 
     void Start()
     {
-
         hash = GameObject.Find(hashName).GetComponent<SpatialHash>();
 
         if (hash == null)

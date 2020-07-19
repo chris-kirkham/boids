@@ -1,8 +1,11 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
-public class BoidVision : MonoBehaviour
+[RequireComponent(typeof(Rigidbody))]
+public class BoidVisionDOTS : MonoBehaviour
 {
     /* Constants */
     private const int SEEN_BOIDS_INIT_CAPACITY = 100;
@@ -11,9 +14,11 @@ public class BoidVision : MonoBehaviour
     private const float OBSTACLE_CHECK_DISTANCE = 50.0f;
 
     /* Components */
+    private Rigidbody rb;
+
     public string hashName; //name of spatial hash object to find
     private SpatialHash hash; //hash in which to store this object
-    
+
     /* Persistent "seen x" lists  */
     public List<GameObject> SeenBoids { get; private set; } = new List<GameObject>(SEEN_BOIDS_INIT_CAPACITY);
     public List<GameObject> SeenObstacles { get; private set; } = new List<GameObject>(SEEN_OBSTACLES_INIT_CAPACITY);
@@ -36,6 +41,8 @@ public class BoidVision : MonoBehaviour
 
     void Start()
     {
+        rb = GetComponent<Rigidbody>();
+
         hash = GameObject.Find(hashName).GetComponent<SpatialHash>();
 
         if (hash == null)
@@ -51,10 +58,10 @@ public class BoidVision : MonoBehaviour
         //System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
 
         List<GameObject> boids = new List<GameObject>();
-        if(useFastHashCheck)
+        if (useFastHashCheck)
         {
             boids = hash.Get(transform.position);
-        } 
+        }
         else
         {
             boids = hash.GetByRadius(transform.position, overlapSphereRadius);
@@ -65,7 +72,7 @@ public class BoidVision : MonoBehaviour
         {
             if (boids[i] != this.gameObject) SeenBoids.Add(boids[i]);
         }
-        
+
         //watch.Stop();
         //if(Random.Range(0f, 1f) >= 0.9f) Debug.Log("time to get seen boids (fast hash check = " + useFastHashCheck + "): " + watch.ElapsedMilliseconds + " ms");
 

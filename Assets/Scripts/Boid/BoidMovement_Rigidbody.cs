@@ -2,26 +2,31 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-//handles actual movement of the boid (applying physics forces, limiting velocity etc.)
-public class BoidMovement : MonoBehaviour
+//handles movement of the boid using a rigidbody
+[RequireComponent(typeof(Rigidbody))]
+public class BoidMovement_Rigidbody : BoidMovement
 {
     private Rigidbody rb;
-    public float velocityLimit;
 
     void Start()
     {
         rb = GetComponent<Rigidbody>();
     }
 
-    public void MoveBoid(Vector3 vel)
+    public override void MoveBoid(Vector3 vel)
     {
-        vel = LimitVelocity(vel, velocityLimit);
+        vel = LimitVelocity(vel, maxSpeed);
         rb.AddForce(vel);
-        rb.velocity = LimitVelocity(rb.velocity, velocityLimit);
+        rb.velocity = LimitVelocity(rb.velocity, maxSpeed);
+    }
+
+    public override Vector3 GetVelocity()
+    {
+        return rb.velocity;
     }
 
     //Limit a vector's magnitude to a certain limit if it is over that limit
-    Vector3 LimitVelocity(Vector3 velocity, float velocityLimit)
+    private Vector3 LimitVelocity(Vector3 velocity, float velocityLimit)
     {
         float velMagnitude = velocity.magnitude;
 

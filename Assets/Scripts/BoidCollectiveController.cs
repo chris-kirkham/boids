@@ -9,13 +9,7 @@ public class BoidCollectiveController : MonoBehaviour {
     public const float VELOCITY_LIMIT = 10.0f;
     private float goalUpdateTime = 0.0f;
     private Vector3 goalDir = new Vector3();
-
-    // Use this for initialization
-    void Start () {
-		
-	}
 	
-	// Update is called once per frame
 	void Update () {
         goalUpdateTime -= Time.deltaTime;
 
@@ -24,9 +18,6 @@ public class BoidCollectiveController : MonoBehaviour {
             goalUpdateTime = GOAL_UPDATE_TIME_INTERVAL;
             SetNewRandomGoal();
         }
-
-        //Debug.DrawLine(this.transform.position, goalVector, Color.green);
-
     }
 
     public void SetNewRandomGoal()
