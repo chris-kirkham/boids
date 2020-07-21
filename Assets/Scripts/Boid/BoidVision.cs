@@ -34,7 +34,7 @@ public class BoidVision : MonoBehaviour
     private const int LAYER_BOID = 1 << 9;
     private const int LAYER_OBSTACLE = 1 << 10;
 
-    void Start()
+    void Awake()
     {
         hash = GameObject.Find(hashName).GetComponent<SpatialHash>();
 

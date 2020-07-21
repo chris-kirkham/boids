@@ -23,8 +23,6 @@ public class BoidSpawner : MonoBehaviour {
         {
             SpawnBoid();
         }
-
-        boidCount = initNumBoids;
 	}
 
     void OnDrawGizmos()
@@ -43,13 +41,11 @@ public class BoidSpawner : MonoBehaviour {
     {
         if (ControlInputs.Instance.spawnNewBoid) 
         {
-            SpawnBoid();
-            boidCount++;
+            for (int i = 0; i < 10; i++) SpawnBoid();
         }
         else if(ControlInputs.Instance.destroyBoid) //destroys last-created boid
         {
-            Destroy(boids.Pop());
-            boidCount--;
+            DestroyBoid();
         }
     }
 
@@ -60,7 +56,16 @@ public class BoidSpawner : MonoBehaviour {
         Vector3 boidPosition = this.transform.position + spawnPosition;
         Quaternion boidRotation = new Quaternion();
         boids.Push(Instantiate(boid, boidPosition, boidRotation));
+        boidCount++;
+        boids.Peek().GetComponent<BoidBehaviour>().UpdateTimeID = boidCount;
+        
         if(debug) Debug.Log("boid spawned at " + boidPosition + "!");
+    }
+
+    void DestroyBoid()
+    {
+        Destroy(boids.Pop());
+        boidCount--;
     }
 
     public int GetBoidCount()

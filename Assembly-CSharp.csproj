@@ -63,13 +63,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\Boid\Base\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\Boid\Base\BoidMovement.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidBehaviour_Singlethreaded.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidMovement_NoRigidbody.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidMovement_Rigidbody.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidVision.cs" />
     <Compile Include="Assets\Scripts\Boid\DOTS\BoidBehaviourDOTS.cs" />
     <Compile Include="Assets\Scripts\Boid\DOTS\BoidVisionDOTS.cs" />
-    <Compile Include="Assets\Scripts\Boid\NoRigidbody\BoidMovement_NoRigidbody.cs" />
     <Compile Include="Assets\Scripts\BoidCollectiveController.cs" />
     <Compile Include="Assets\Scripts\BoidSpawner.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
