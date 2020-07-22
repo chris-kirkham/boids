@@ -86,6 +86,8 @@
     <Compile Include="Assets\Scripts\UI\HUD_FrameTime.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_MouseFollow.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_NumBoids.cs" />
+    <Compile Include="Assets\Scripts\Utility\Noise\DirectionalPerlin.cs" />
+    <Compile Include="Assets\Scripts\Utility\Noise\Perlin.cs" />
     <Reference Include="UnityEngine">
       <HintPath>C:/Program Files/Unity/Hub/Editor/2019.4.2f1/Editor/Data/Managed/UnityEngine/UnityEngine.dll</HintPath>
     </Reference>

@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
 using UnityEngine;
@@ -265,7 +264,7 @@ public class SpatialHash : MonoBehaviour
     }
     */
 
-    //returns a list of all objects in buckets[key], or empty list if key isn't in the dictionary
+    //returns a list of all objects in cells[key], or empty list if key isn't in the dictionary
     public List<GameObject> Get(Vector3Int key)
     {
         return cells.ContainsKey(key) ? cells[key].GetObjs() : new List<GameObject>();
@@ -274,22 +273,47 @@ public class SpatialHash : MonoBehaviour
     //returns a list of all objects in the cell which contains pos, or empty list if pos is not a coordinate in an existing cell 
     public List<GameObject> Get(Vector3 pos)
     {
-        Vector3Int key = Key(pos);
-        return cells.ContainsKey(key) ? cells[key].GetObjs() : new List<GameObject>();
+        return Get(Key(pos));
+    }
+
+    //returns a list of up to n objects in the given key's hash cell.
+    //If number of objs in cell < n, returns all objects in the cell; returns an empty list if no objects in the cell or the cell does not exist 
+    public List<GameObject> GetNRandom(Vector3Int key, int n)
+    {
+        List<GameObject> objsInCell = Get(key);
+        
+        if(objsInCell.Count == 0) return new List<GameObject>();
+
+        List<GameObject> objs = new List<GameObject>(n);
+        if (n < objsInCell.Count)
+        {
+            for (int i = 0; i < n; i++)
+            {
+                objs.Add(objsInCell[Random.Range(0, objsInCell.Count - 1)]);
+            }
+        }
+
+        return objs;
+    }
+    
+    //returns a list of n objects in the given position's hash cell, or an empty list if none in the cell or the cell does not exist 
+    public List<GameObject> GetNRandom(Vector3 pos, int n)
+    {
+        return GetNRandom(Key(pos), n);
     }
 
     //returns a list of GameObjects <= r distance from pos. Does NOT remove duplicates (big objects added to more than one bucket by AddByAABB) 
     // - this is faster, but may produce bad results if you care about duplicates (e.g. if you are counting the number of objects within r distance)
-    public List<GameObject> GetByRadius(Vector3 pos, float r)
+    public List<GameObject> GetByRadius(Vector3 pos, float r, int maxToGet)
     {
         List<GameObject> objsInRange = new List<GameObject>();
 
-        Vector3Int posKey = Key(pos); //key of cell containing pos - used for checking later
-        
         //objects which may be within search radius (from cells that are in search radius - will always check at least the cell containing pos)
-        List<GameObject> objsToCheck = new List<GameObject>(Get(pos));
+        List<GameObject> objsToCheck = Get(pos);
 
-        /* add other cells within radius, if any, to cellsToCheck */
+        /*
+        //add other cells within radius, if any
+        Vector3Int posKey = Key(pos); //key of cell containing pos - used for checking later
         //left/right/up/down/back/forward
         Vector3 left = new Vector3(pos.x - r, pos.y, pos.z);
         if (Key(left) != posKey) objsToCheck.AddRange(Get(left));
@@ -310,13 +334,27 @@ public class SpatialHash : MonoBehaviour
         if (Key(back) != posKey) objsToCheck.AddRange(Get(back));
 
         //diagonals
+        */
 
+        //check distance on objects within cellsToCheck
+        float rSqr = r * r;
 
-        /* check distance on objects within cellsToCheck */
-        float rSqr = r * r; //check sqr magnitude to avoid sqrt calls
-        foreach(GameObject obj in objsToCheck)
+        //If more objects in retrieved hash list(s) than are to check, get random indexes -
+        //this stops all boids in this hash cell "seeing" the first n boids in the hash list and ignoring the rest.
+        //It could produce duplicate seen boids, but that shouldn't visibly affect its behaviour unless it picks the same one loads of times
+        if (maxToGet < objsToCheck.Count)
         {
-            if (Vector3.SqrMagnitude(pos - obj.transform.position) <= rSqr) objsInRange.Add(obj);
+            for (int i = 0; i < maxToGet; i++)
+            {
+                if (Vector3.SqrMagnitude(pos - objsToCheck[i].transform.position) <= rSqr) objsInRange.Add(objsToCheck[Random.Range(0, objsToCheck.Count - 1)]);
+            }
+        }
+        else
+        {
+            for (int i = 0; i < objsToCheck.Count; i++)
+            {
+                if (Vector3.SqrMagnitude(pos - objsToCheck[i].transform.position) <= rSqr) objsInRange.Add(objsToCheck[i]);
+            }
         }
 
         return objsInRange;

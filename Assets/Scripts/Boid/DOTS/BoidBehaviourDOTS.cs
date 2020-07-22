@@ -45,70 +45,30 @@ public class BoidBehaviourDOTS : BoidBehaviour
                 pos = transform.position,
                 seenBoidPositions = this.seenBoidPositions,
                 seenBoidVelocities = this.seenBoidVelocities,
-                boidAvoidSpeed = this.boidAvoidMultiplier,
+                boidAvoidSpeed = this.boidAvoidSpeed,
                 boidAvoidDistance = this.boidAvoidDistance,
                 useMouseFollow = ControlInputs.Instance.useMouseFollow,
                 mouseTarget = this.mouseTarget,
-                mouseFollowSpeed = this.mouseFollowMultiplier,
+                mouseFollowSpeed = this.cursorFollowSpeed,
                 useBoundingCoordinates = ControlInputs.Instance.useBoundingCoordinates,
                 positiveBounds = this.positiveBounds,
                 negativeBounds = this.negativeBounds,
-                boundsAvoidSpeed = this.boundsAvoidMultiplier,
+                boundsAvoidSpeed = this.boundsReturnSpeed,
                 resultDir = this.resultDir
             };
             jobHandle = job.Schedule();
         }
     }
 
+    private void FixedUpdate()
+    {
+        boidMovement.MoveBoid(resultDir[0]);
+        transform.right = -resultDir[0]; //rotate boid to face movement direction
+    }
+
     private void Update()
     {
         if (ControlInputs.Instance.useMouseFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
-
-        //updateTime -= Time.deltaTime;
-        idleTimer -= Time.deltaTime;
-
-        //calculate boid behaviour
-        if (updateTime <= 0.0f)
-        {
-            if (jobHandle.IsCompleted)
-            {
-                jobHandle.Complete();
-                //boidMovement.MoveBoid(resultDir[0]);
-                //transform.right = -resultDir[0]; //rotate boid to face movement direction
-
-                //Update seen boids lists
-                seenBoidPositions.Clear();
-                seenBoidVelocities.Clear();
-                boidVision.UpdateSeenBoids();
-                foreach (GameObject boid in boidVision.SeenBoids)
-                {
-                    seenBoidPositions.Add(boid.transform.position);
-                    seenBoidVelocities.Add(boidMovement.GetVelocity());
-                }
-
-                //Initialise and run job
-                BoidBehaviourJob job = new BoidBehaviourJob()
-                {
-                    pos = transform.position,
-                    seenBoidPositions = this.seenBoidPositions,
-                    seenBoidVelocities = this.seenBoidVelocities,
-                    boidAvoidSpeed = this.boidAvoidMultiplier,
-                    boidAvoidDistance = this.boidAvoidDistance,
-                    useMouseFollow = ControlInputs.Instance.useMouseFollow,
-                    mouseTarget = this.mouseTarget,
-                    mouseFollowSpeed = this.mouseFollowMultiplier,
-                    useBoundingCoordinates = ControlInputs.Instance.useBoundingCoordinates,
-                    positiveBounds = this.positiveBounds,
-                    negativeBounds = this.negativeBounds,
-                    boundsAvoidSpeed = this.boundsAvoidMultiplier,
-                    resultDir = this.resultDir
-                };
-                jobHandle = job.Schedule();
-            }
-        }
-
-        boidMovement.MoveBoid(resultDir[0]);
-        transform.right = -resultDir[0]; //rotate boid to face movement direction
     }
 
     private void OnDestroy()

@@ -16,8 +16,6 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
     void Update()
     {
         if (ControlInputs.Instance.useMouseFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
-        idleTimer -= Time.deltaTime;
-        UpdateIdle(); //update idle behaviour
     }
 
     void FixedUpdate()
@@ -60,7 +58,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
                 boundsAvoidVector.z += Mathf.Abs(transform.position.z - negativeBounds.z);
             }
 
-            boundsAvoidVector *= boundsAvoidMultiplier;
+            boundsAvoidVector *= boundsReturnSpeed;
         }
 
         return boundsAvoidVector;
@@ -90,7 +88,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
                 if (Vector3.Distance(transform.position, boidVision.SeenBoids[i].transform.position) < boidAvoidDistance)
                 {
                     boidAvoidVector += transform.position - boidVision.SeenBoids[i].transform.position;
-                    Debug.DrawLine(transform.position, boidVision.SeenBoids[i].transform.position, Color.cyan);
+                    Debug.DrawLine(transform.position, boidVision.SeenBoids[i].transform.position, new Color(transform.position.x % 1, transform.position.y % 1, transform.position.z % 1));
                 }
 
                 //move towards centre of nearby boids
@@ -104,7 +102,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             velocityMatch = velocityMatch / boidVision.SeenBoids.Count;
         }
 
-        return (boidAvoidVector * boidAvoidMultiplier) + centre + velocityMatch;
+        return (boidAvoidVector * boidAvoidSpeed) + centre + velocityMatch;
     }
 
     //Check if the boid is heading towards an obstacle; if so, fire rays out in increasing angles to the left, right,
@@ -191,73 +189,11 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             if (foundAvoidVector)
             {
                 Debug.DrawRay(transform.position, closestVector, Color.green);
-                return closestVector * obstacleAvoidMultiplier;
+                return closestVector * obstacleAvoidSpeed;
             }
         }
 
         return Vector3.zero;
-    }
-
-    //If the boid is heading towards an obstacle, returns the closest edge of its bounds (with a "distance from edge" value).  
-    private Vector3 AvoidObstaclesFast()
-    {
-        //get raycast target direction
-        Vector3 target;
-        float checkDistance;
-        if (ControlInputs.Instance.useMouseFollow)
-        {
-            target = mouseTarget - transform.position;
-            checkDistance = Vector3.Distance(transform.position, mouseTarget);
-        }
-        else
-        {
-            target = boidMovement.GetVelocity();
-            checkDistance = OBSTACLE_CHECK_DISTANCE;
-        }
-
-        if (Physics.Raycast(transform.position, target, out RaycastHit hit, checkDistance, LAYER_OBSTACLE))
-        {
-            //renderer bounds is in the object's local space (collider bounds is in world space)
-            Bounds bounds = hit.collider.bounds;
-
-            //construct points on each edge of bounds hit face
-            Vector3 left = new Vector3(bounds.min.x, hit.point.y, hit.point.z);
-            Vector3 right = new Vector3(bounds.max.x, hit.point.y, hit.point.z);
-            Vector3 up = new Vector3(hit.point.x, bounds.max.y, hit.point.z);
-            Vector3 down = new Vector3(hit.point.x, bounds.min.y, hit.point.z);
-
-            //find closest edge point to target position
-            float minSqrDist = Vector3.SqrMagnitude(target - left);
-            Vector3 min = left;
-
-            float rightSqrDist = Vector3.SqrMagnitude(target - right);
-            if (rightSqrDist < minSqrDist)
-            {
-                minSqrDist = rightSqrDist;
-                min = right;
-            }
-
-            float upSqrDist = Vector3.SqrMagnitude(target - up);
-            if (upSqrDist < minSqrDist)
-            {
-                minSqrDist = upSqrDist;
-                min = up;
-            }
-
-            float downSqrDist = Vector3.SqrMagnitude(target - down);
-            if (downSqrDist < minSqrDist)
-            {
-                min = down;
-            }
-
-            //closest edge + padding on the obstacle's bounds is our avoid vector
-            Debug.DrawLine(transform.position, min, new Color(0, 0, 1, 0.5f), 0.2f);
-            return min.normalized * obstacleAvoidMultiplier;
-        }
-        else
-        {
-            return Vector3.zero;
-        }
     }
 
     //causes the boid to repel itself from obstacles closer than OBSTACLE_CRITICAL_DISTANCE
@@ -278,29 +214,24 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         if (Physics.Raycast(transform.position, boidMovement.GetVelocity(), out RaycastHit hit, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec = hit.normal;
         //Debug.DrawRay(transform.position, repulsionVec, Color.yellow,  0.2f);
 
-        return repulsionVec * obstacleAvoidMultiplier * 1000;
+        return repulsionVec * obstacleAvoidSpeed;
     }
 
     Vector3 FollowCursor()
     {
-        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position) * mouseFollowMultiplier : Vector3.zero;
+        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position) * cursorFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveToGoal()
     {
-        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position) * goalVectorMultiplier : Vector3.zero;
+        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position) * goalFollowSpeed : Vector3.zero;
     }
 
-    void UpdateIdle() //updates idleVec with new idle movement vector if idle timer <= 0 (N.B. Idle timer is decremented in FixedUpdate)
+    Vector3 MoveIdle() 
     {
-        if (idleTimer <= 0.0f)
-        {
-            idleTimer = BASE_IDLE_TIMER + Random.Range(-IDLE_TIMER_VARIANCE, IDLE_TIMER_VARIANCE);
-            idleVec = new Vector3(
-                Random.Range(-boidMovement.maxSpeed, boidMovement.maxSpeed),
-                Random.Range(-boidMovement.maxSpeed, boidMovement.maxSpeed),
-                Random.Range(-boidMovement.maxSpeed, boidMovement.maxSpeed));
-        }
+        Vector3 idleDir = DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, Time.timeSinceLevelLoad);
+        Debug.DrawRay(transform.position, idleDir, Color.magenta, 0.1f);
+        return DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, Time.timeSinceLevelLoad);
     }
 
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules
@@ -314,7 +245,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         }
         else if (boidVision.SeenBoids.Count == 0 && !ControlInputs.Instance.useMouseFollow) //if no boids nearby, not avoiding an obstacle, and not following mouse, do idle behaviour
         {
-            return idleVec + repulsionVector + ReturnToBounds();
+            return MoveIdle() + repulsionVector + ReturnToBounds();
         }
         else
         {

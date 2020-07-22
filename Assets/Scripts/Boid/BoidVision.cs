@@ -7,8 +7,9 @@ public class BoidVision : MonoBehaviour
     /* Constants */
     private const int SEEN_BOIDS_INIT_CAPACITY = 100;
     private const int SEEN_OBSTACLES_INIT_CAPACITY = 100;
-
     private const float OBSTACLE_CHECK_DISTANCE = 50.0f;
+
+    private const float BOID_SEEN_DOT_MIN = -0.75f;
 
     /* Components */
     public string hashName; //name of spatial hash object to find
@@ -53,17 +54,20 @@ public class BoidVision : MonoBehaviour
         List<GameObject> boids = new List<GameObject>();
         if(useFastHashCheck)
         {
-            boids = hash.Get(transform.position);
+            boids = hash.GetNRandom(transform.position, maxSeenBoidsToStore);
         } 
         else
         {
-            boids = hash.GetByRadius(transform.position, overlapSphereRadius);
+            boids = hash.GetByRadius(transform.position, overlapSphereRadius, maxSeenBoidsToStore);
         }
 
         int n = (maxSeenBoidsToStore <= 0) ? boids.Count : Mathf.Min(boids.Count, maxSeenBoidsToStore);
         for (int i = 0; i < n; i++)
         {
-            if (boids[i] != this.gameObject) SeenBoids.Add(boids[i]);
+            if (boids[i] != this.gameObject && IsWithinVisionAngle(boids[i].transform.position))
+            {
+                SeenBoids.Add(boids[i]);
+            }
         }
         
         //watch.Stop();
@@ -81,6 +85,17 @@ public class BoidVision : MonoBehaviour
                 overlapSphereRadius -= adaptiveOverlapSphereInc;
             }
         }
+    }
+
+    private bool IsWithinVisionAngle(Vector3 otherBoidPos)
+    {
+        return Vector3.Dot(transform.forward, (otherBoidPos - transform.position).normalized) > BOID_SEEN_DOT_MIN;
+    }
+
+    private void OnDrawGizmosSelected()
+    {
+        Gizmos.color = new Color(0, 1, 1, 0.5f);
+        Gizmos.DrawSphere(transform.position, overlapSphereRadius);
     }
 
     /*

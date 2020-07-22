@@ -9,7 +9,7 @@ public class BoidMovement_NoRigidbody : BoidMovement
 
     private Vector3 smoothdampVelocity = Vector3.zero; //used for Smoothdamp when moving boid
 
-    private void Start()
+    private void Awake()
     {
         lastPosition = transform.position;
     }
