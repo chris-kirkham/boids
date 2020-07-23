@@ -21,7 +21,6 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
     void FixedUpdate()
     {
         boidMovement.MoveBoid(moveDirection);
-        transform.right = Vector3.Lerp(transform.right, -moveDirection, 100f * Time.deltaTime); //rotate boid to face movement direction
     }
 
     Vector3 ReturnToBounds()
@@ -85,7 +84,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             for (int i = 0; i < numToCheck; i++)
             {
                 //avoid other boids
-                if (Vector3.Distance(transform.position, boidVision.SeenBoids[i].transform.position) < boidAvoidDistance)
+                if (Vector3.SqrMagnitude(transform.position - boidVision.SeenBoids[i].transform.position) < sqrBoidAvoidDistance)
                 {
                     boidAvoidVector += transform.position - boidVision.SeenBoids[i].transform.position;
                     Debug.DrawLine(transform.position, boidVision.SeenBoids[i].transform.position, new Color(transform.position.x % 1, transform.position.y % 1, transform.position.z % 1));
@@ -103,6 +102,19 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         }
 
         return (boidAvoidVector * boidAvoidSpeed) + centre + velocityMatch;
+    }
+
+    Vector3 Disperse(List<GameObject> seenBoids)
+    {
+        Vector3 disperse = Vector3.zero;
+
+        int numToCheck = Mathf.Min(numClosestToCheck, seenBoids.Count);
+        for(int i = 0; i < numToCheck; i++)
+        {
+            disperse -= seenBoids[i].transform.position - transform.position;
+        }
+
+        return disperse;
     }
 
     //Check if the boid is heading towards an obstacle; if so, fire rays out in increasing angles to the left, right,

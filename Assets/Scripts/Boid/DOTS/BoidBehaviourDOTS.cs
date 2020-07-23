@@ -63,7 +63,6 @@ public class BoidBehaviourDOTS : BoidBehaviour
     private void FixedUpdate()
     {
         boidMovement.MoveBoid(resultDir[0]);
-        transform.right = -resultDir[0]; //rotate boid to face movement direction
     }
 
     private void Update()

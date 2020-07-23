@@ -19,7 +19,7 @@ public abstract class BoidBehaviour : MonoBehaviour
 
     [Header("Reaction to other boids")]
     public float boidAvoidDistance = 1f;
-    private float sqrBoidAvoidDistance;
+    protected float sqrBoidAvoidDistance;
     public float boidAvoidSpeed = 1f;
     public int numClosestToCheck = 5;
 
@@ -65,7 +65,6 @@ public abstract class BoidBehaviour : MonoBehaviour
     protected const float UPDATE_TIME_VARIANCE = 0.1f; //vary time between boid updates so not all boids will update on the same frame
     protected float updateTime = 0.0f; //used to time next vision update
 
-
     protected virtual void Start ()
     {
         boidVision = GetComponent<BoidVision>();
@@ -99,7 +98,7 @@ public abstract class BoidBehaviour : MonoBehaviour
         sqrBoidAvoidDistance = boidAvoidDistance * boidAvoidDistance;
     }
 
-    //Put boid update code here; called in UpdateBoidCoroutine
+    //Called in UpdateBoidCoroutine; put boid update code here
     protected abstract void UpdateBoid();
 
     //Calls UpdateBoid every updateTime seconds

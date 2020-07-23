@@ -66,13 +66,14 @@
     <Compile Include="Assets\Scripts\Boid\Base\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\Boid\Base\BoidMovement.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidBehaviour_Singlethreaded.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidCollectiveController.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidMovement_NoRigidbody.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidMovement_Rigidbody.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidSpawner.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidVision.cs" />
     <Compile Include="Assets\Scripts\Boid\DOTS\BoidBehaviourDOTS.cs" />
     <Compile Include="Assets\Scripts\Boid\DOTS\BoidVisionDOTS.cs" />
-    <Compile Include="Assets\Scripts\BoidCollectiveController.cs" />
-    <Compile Include="Assets\Scripts\BoidSpawner.cs" />
+    <Compile Include="Assets\Scripts\Boid\DOTS\Components\Position.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\ControlInputs.cs" />
     <Compile Include="Assets\Scripts\MouseTargetController.cs" />
@@ -786,6 +787,12 @@
     </Reference>
     <Reference Include="com.unity.multiplayer-hlapi.Runtime">
       <HintPath>C:/Users/Chris/Unity/boids/Library/ScriptAssemblies/com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Rendering.Hybrid">
+      <HintPath>C:/Users/Chris/Unity/boids/Library/ScriptAssemblies/Unity.Rendering.Hybrid.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Rendering.Hybrid.Editor">
+      <HintPath>C:/Users/Chris/Unity/boids/Library/ScriptAssemblies/Unity.Rendering.Hybrid.Editor.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup></ItemGroup>
