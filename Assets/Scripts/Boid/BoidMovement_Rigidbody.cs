@@ -18,7 +18,7 @@ public class BoidMovement_Rigidbody : BoidMovement
         vel = LimitVelocity(vel, maxSpeed);
         rb.AddForce(vel);
         rb.velocity = LimitVelocity(rb.velocity, maxSpeed);
-        if(vel != Vector3.zero) transform.forward = Vector3.Lerp(transform.forward, vel.normalized, 100f * Time.deltaTime);
+        if(rb.velocity != Vector3.zero) transform.forward = rb.velocity;
     }
 
     public override Vector3 GetVelocity()

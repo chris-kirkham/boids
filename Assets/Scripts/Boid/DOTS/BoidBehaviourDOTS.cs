@@ -3,16 +3,17 @@ using System.Collections.Generic;
 using Unity.Collections;
 using Unity.Jobs;
 using Unity.Burst;
+using Unity.Mathematics;
 using UnityEngine;
 
 public class BoidBehaviourDOTS : BoidBehaviour
 {
     //Job variables (initialised in InitBoidBehaviourJob())
     private JobHandle jobHandle;
-    [ReadOnly] public NativeList<Vector3> seenBoidPositions;
-    [ReadOnly] public NativeList<Vector3> seenBoidVelocities;
+    public NativeList<float3> seenBoidPositions;
+    public NativeList<float3> seenBoidVelocities;
     private int JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH = 100;
-    public NativeArray<Vector3> resultDir;
+    public NativeArray<float3> resultDir;
 
     // Use this for initialization
     protected override void Start()
@@ -26,8 +27,6 @@ public class BoidBehaviourDOTS : BoidBehaviour
         if (jobHandle.IsCompleted)
         {
             jobHandle.Complete();
-            //boidMovement.MoveBoid(resultDir[0]);
-            //transform.right = -resultDir[0]; //rotate boid to face movement direction
 
             //Update seen boids lists
             seenBoidPositions.Clear();
@@ -46,7 +45,7 @@ public class BoidBehaviourDOTS : BoidBehaviour
                 seenBoidPositions = this.seenBoidPositions,
                 seenBoidVelocities = this.seenBoidVelocities,
                 boidAvoidSpeed = this.boidAvoidSpeed,
-                boidAvoidDistance = this.boidAvoidDistance,
+                sqrBoidAvoidDistance = this.sqrBoidAvoidDistance,
                 useMouseFollow = ControlInputs.Instance.useMouseFollow,
                 mouseTarget = this.mouseTarget,
                 mouseFollowSpeed = this.cursorFollowSpeed,
@@ -54,6 +53,8 @@ public class BoidBehaviourDOTS : BoidBehaviour
                 positiveBounds = this.positiveBounds,
                 negativeBounds = this.negativeBounds,
                 boundsAvoidSpeed = this.boundsReturnSpeed,
+                idleNoiseFrequency = this.idleNoiseFrequency,
+                offset = useTimeOffset ? Time.timeSinceLevelLoad : 0,
                 resultDir = this.resultDir
             };
             jobHandle = job.Schedule();
@@ -79,70 +80,55 @@ public class BoidBehaviourDOTS : BoidBehaviour
     }
 
     [BurstCompile]
-    private Vector3 ObstacleRepulsionJob(Vector3 pos)
-    {
-        Vector3 repulseDirection = Vector3.zero;
-            
-        NativeArray<RaycastHit> results = new NativeArray<RaycastHit>(1, Allocator.Temp);
-        NativeArray<RaycastCommand> commands = new NativeArray<RaycastCommand>(1, Allocator.Temp);
-
-        if (Physics.Raycast(transform.position, boidMovement.GetVelocity(), out RaycastHit hit, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulseDirection = hit.normal;
-
-        JobHandle handle = RaycastCommand.ScheduleBatch(commands, results, 1);
-        handle.Complete();
-
-        results.Dispose();
-        commands.Dispose();
-
-        return repulseDirection;
-    }
-
-    [BurstCompile]
     public struct BoidBehaviourJob : IJob
     {
         //boid info
-        public Vector3 pos;
+        public float3 pos;
 
         //other boid info
-        [ReadOnly] public NativeArray<Vector3> seenBoidPositions;
-        [ReadOnly] public NativeArray<Vector3> seenBoidVelocities;
+        [ReadOnly] public NativeList<float3> seenBoidPositions;
+        [ReadOnly] public NativeList<float3> seenBoidVelocities;
         public float boidAvoidSpeed;
-        public float boidAvoidDistance;
+        public float sqrBoidAvoidDistance;
 
         //mouse following
         public bool useMouseFollow;
-        public Vector3 mouseTarget;
+        public float3 mouseTarget;
         public float mouseFollowSpeed;
 
         //bounds checking
         public bool useBoundingCoordinates;
-        public Vector3 positiveBounds, negativeBounds;
+        public float3 positiveBounds, negativeBounds;
         public float boundsAvoidSpeed;
 
+        //idle movement
+        public float idleNoiseFrequency;
+        public float offset;
+
         //result direction vector (only one vector)
-        public NativeArray<Vector3> resultDir;
+        public NativeArray<float3> resultDir;
 
         public void Execute()
         {
             //resultDir[0] = ReactToOtherBoids() + FollowCursor() + ReturnToBounds() + ObstacleRepulsion();
-            resultDir[0] = ReactToOtherBoids() + FollowCursor() + ReturnToBounds();
+            resultDir[0] = ReactToOtherBoids() + FollowCursor() + ReturnToBounds() + MoveIdle();
         }
 
         //returns the boid's velocity vector after reacting to other boids in the environment (avoiding other boids, moving to centre of other boids,
         //matching velocity with other boids
-        Vector3 ReactToOtherBoids()
+        float3 ReactToOtherBoids()
         {
             float numSeenBoids = seenBoidPositions.Length;
-            if (numSeenBoids == 0) return Vector3.zero;
+            if (numSeenBoids == 0) return float3.zero;
 
-            Vector3 boidAvoidDir = Vector3.zero;
-            Vector3 centre = Vector3.zero;
-            Vector3 velocityMatch = Vector3.zero;
+            float3 boidAvoidDir = float3.zero;
+            float3 centre = float3.zero;
+            float3 velocityMatch = float3.zero;
 
             for (int i = 0; i < numSeenBoids; i++)
             {
                 //avoid other boids
-                if (Vector3.Distance(pos, seenBoidPositions[i]) < boidAvoidDistance)
+                if (Vector3.SqrMagnitude(pos - seenBoidPositions[i]) < sqrBoidAvoidDistance)
                 {
                     boidAvoidDir += pos - seenBoidPositions[i];
                 }
@@ -157,14 +143,14 @@ public class BoidBehaviourDOTS : BoidBehaviour
             return (boidAvoidDir * boidAvoidSpeed) + centre + velocityMatch;
         }
 
-        Vector3 FollowCursor()
+        float3 FollowCursor()
         {
-            return useMouseFollow ? (mouseTarget - pos) * mouseFollowSpeed : Vector3.zero;
+            return useMouseFollow ? (float3)Vector3.Normalize(mouseTarget - pos) * mouseFollowSpeed : float3.zero;
         }
 
-        Vector3 ReturnToBounds()
+        float3 ReturnToBounds()
         {
-            Vector3 boundsAvoidVector = Vector3.zero;
+            float3 boundsAvoidVector = float3.zero;
 
             //if close to edge of bounding box, move away from the edge
             if (useBoundingCoordinates)
@@ -202,13 +188,32 @@ public class BoidBehaviourDOTS : BoidBehaviour
             return boundsAvoidVector;
         }
 
+        float3 MoveIdle()
+        {
+            return DirectionalPerlin.Directional3D(pos, idleNoiseFrequency, offset);
+        }
+    }
+
+    [BurstCompile]
+    private struct ObstacleRepulsionJob : IJob
+    {
+        NativeArray<float3> repulseDirection;
         
+        NativeArray<RaycastCommand> rayCommands;
+        NativeArray<RaycastHit> rayResults;
+
+        public void Execute()
+        {
+
+        }
+
+        //if (Physics.Raycast(transform.position, boidMovement.GetVelocity(), out RaycastHit hit, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulseDirection = hit.normal;
     }
 
     private void InitBoidBehaviourJob()
     {
-        seenBoidPositions = new NativeList<Vector3>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
-        seenBoidVelocities = new NativeList<Vector3>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
-        resultDir = new NativeArray<Vector3>(1, Allocator.Persistent);
+        seenBoidPositions = new NativeList<float3>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
+        seenBoidVelocities = new NativeList<float3>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
+        resultDir = new NativeArray<float3>(1, Allocator.Persistent);
     }
 }

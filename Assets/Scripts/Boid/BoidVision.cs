@@ -7,9 +7,8 @@ public class BoidVision : MonoBehaviour
     /* Constants */
     private const int SEEN_BOIDS_INIT_CAPACITY = 100;
     private const int SEEN_OBSTACLES_INIT_CAPACITY = 100;
-    private const float OBSTACLE_CHECK_DISTANCE = 50.0f;
 
-    private const float BOID_SEEN_DOT_MIN = -0.75f;
+    private const float BOID_SEEN_DOT_MIN = -0.5f;
 
     /* Components */
     public string hashName; //name of spatial hash object to find
@@ -58,9 +57,19 @@ public class BoidVision : MonoBehaviour
         } 
         else
         {
-            boids = hash.GetByRadius(transform.position, overlapSphereRadius, maxSeenBoidsToStore);
+            //boids = hash.GetNByRadius(transform.position, overlapSphereRadius, maxSeenBoidsToStore);
+            boids = hash.GetByRadius(transform.position, overlapSphereRadius);
         }
 
+        foreach(GameObject boid in boids)
+        {
+            if (boid != this.gameObject && IsWithinVisionAngle(boid.transform.position))
+            {
+                SeenBoids.Add(boid);
+            }
+        }
+
+        /*
         int n = (maxSeenBoidsToStore <= 0) ? boids.Count : Mathf.Min(boids.Count, maxSeenBoidsToStore);
         for (int i = 0; i < n; i++)
         {
@@ -69,7 +78,8 @@ public class BoidVision : MonoBehaviour
                 SeenBoids.Add(boids[i]);
             }
         }
-        
+        */
+
         //watch.Stop();
         //if(Random.Range(0f, 1f) >= 0.9f) Debug.Log("time to get seen boids (fast hash check = " + useFastHashCheck + "): " + watch.ElapsedMilliseconds + " ms");
 

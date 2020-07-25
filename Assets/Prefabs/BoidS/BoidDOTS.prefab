@@ -59,6 +59,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -83,6 +84,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &7899564145633988363
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,12 +128,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hashName: BoidSpatialHash
-  overlapSphereRadius: 1
-  useAdaptiveOverlapSphere: 1
+  overlapSphereRadius: 5
+  useAdaptiveOverlapSphere: 0
   minAdaptiveOverlapRadius: 1
   maxAdaptiveOverlapRadius: 50
   maxSeenBoidsToStore: 5
-  useFastHashCheck: 1
+  useFastHashCheck: 0
 --- !u!114 &5879448467393069781
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -145,6 +147,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 25
+  smoothTime: 5
 --- !u!114 &4876609373067108080
 MonoBehaviour:
   m_ObjectHideFlags: 0

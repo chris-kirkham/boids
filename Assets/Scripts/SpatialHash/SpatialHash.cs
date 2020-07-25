@@ -10,7 +10,7 @@ public class SpatialHash : MonoBehaviour
     private class Cell
     {
         private List<GameObject> objs;
-        private const float emptyTimeout = 5f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
+        private const float emptyTimeout = 100f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
         private float timeout;
 
         public Cell()
@@ -120,60 +120,6 @@ public class SpatialHash : MonoBehaviour
 
     }
 
-    /*
-    public SpatialHash(float cellSize, int numCellsX, int numCellsY, int numCellsZ) //constructor for cubic cells
-    {
-        cellSizeX = cellSize;
-        cellSizeY = cellSize;
-        cellSizeZ = cellSize;
-
-        initNumCellsX = numCellsX;
-        initNumCellsY = numCellsY;
-        initNumCellsZ = numCellsZ;
-
-        //initialise dictionary with initial capacity = number of initial cells
-        buckets = new Dictionary<Vector3Int, List<GameObject>>(numCellsX * numCellsY * numCellsZ); 
-        
-        //add keys for initial cells and initialise corresponding empty buckets 
-        for(int i = 0; i < numCellsX; ++i)
-        {
-            for(int j = 0; j < numCellsY; ++j)
-            {
-                for(int k = 0; k < numCellsZ; ++k)
-                {
-                    buckets.Add(Key(new Vector3(i * cellSizeX, j * cellSizeY, k * cellSizeZ)), new List<GameObject>());
-                }
-            }
-        }
-    }
-
-    public SpatialHash(float cellSizeX, float cellSizeY, float cellSizeZ, int numCellsX, int numCellsY, int numCellsZ) //constructor for cuboid cells
-    {
-        this.cellSizeX = cellSizeX;
-        this.cellSizeY = cellSizeY;
-        this.cellSizeZ = cellSizeZ;
-
-        initNumCellsX = numCellsX;
-        initNumCellsY = numCellsY;
-        initNumCellsZ = numCellsZ;
-
-        //initialise dictionary with initial capacity = number of initial cells
-        buckets = new Dictionary<Vector3Int, List<GameObject>>(numCellsX * numCellsY * numCellsZ);
-
-        //add keys for initial cells and initialise corresponding empty buckets 
-        for(int i = 0; i < numCellsX; ++i)
-        {
-            for(int j = 0; j < numCellsY; ++j)
-            {
-                for(int k = 0; k < numCellsZ; ++k)
-                {
-                    buckets.Add(Key(new Vector3(i * cellSizeX, j * cellSizeY, k * cellSizeZ)), new List<GameObject>());
-                }
-            }
-        }
-    }
-    */
-
     void Update()
     {
         //delete timed-out cells
@@ -211,10 +157,10 @@ public class SpatialHash : MonoBehaviour
     {
         //Stopwatch watch = Stopwatch.StartNew();
 
-        ClearBuckets();
+        ClearCells();
 
         //watch.Stop();
-        //UnityEngine.Debug.Log("time to clear buckets: " + watch.ElapsedTicks + " ticks");
+        //UnityEngine.Debug.Log("time to clear cells: " + watch.ElapsedMilliseconds + " milliseconds");
 
         if(!useAABB)
         {
@@ -302,46 +248,19 @@ public class SpatialHash : MonoBehaviour
         return GetNRandom(Key(pos), n);
     }
 
-    //returns a list of GameObjects <= r distance from pos. Does NOT remove duplicates (big objects added to more than one bucket by AddByAABB) 
+    //returns a list of up to n GameObjects <= r distance from pos. Does NOT remove duplicates (big objects added to more than one bucket by AddByAABB) 
     // - this is faster, but may produce bad results if you care about duplicates (e.g. if you are counting the number of objects within r distance)
-    public List<GameObject> GetByRadius(Vector3 pos, float r, int maxToGet)
+    public List<GameObject> GetNByRadius(Vector3 pos, float r, int maxToGet)
     {
         List<GameObject> objsInRange = new List<GameObject>();
 
         //objects which may be within search radius (from cells that are in search radius - will always check at least the cell containing pos)
         List<GameObject> objsToCheck = Get(pos);
 
-        /*
-        //add other cells within radius, if any
-        Vector3Int posKey = Key(pos); //key of cell containing pos - used for checking later
-        //left/right/up/down/back/forward
-        Vector3 left = new Vector3(pos.x - r, pos.y, pos.z);
-        if (Key(left) != posKey) objsToCheck.AddRange(Get(left));
-
-        Vector3 right = new Vector3(pos.x + r, pos.y, pos.z);
-        if (Key(right) != posKey) objsToCheck.AddRange(Get(right));
-
-        Vector3 up = new Vector3(pos.x, pos.y + r, pos.z);
-        if (Key(up) != posKey) objsToCheck.AddRange(Get(up));
-
-        Vector3 down = new Vector3(pos.x, pos.y - r, pos.z);
-        if (Key(down) != posKey) objsToCheck.AddRange(Get(down));
-
-        Vector3 forward = new Vector3(pos.x, pos.y, pos.z + r);
-        if (Key(forward) != posKey) objsToCheck.AddRange(Get(forward));
-
-        Vector3 back = new Vector3(pos.x, pos.y, pos.z - r);
-        if (Key(back) != posKey) objsToCheck.AddRange(Get(back));
-
-        //diagonals
-        */
-
-        //check distance on objects within cellsToCheck
-        float rSqr = r * r;
-
         //If more objects in retrieved hash list(s) than are to check, get random indexes -
         //this stops all boids in this hash cell "seeing" the first n boids in the hash list and ignoring the rest.
         //It could produce duplicate seen boids, but that shouldn't visibly affect its behaviour unless it picks the same one loads of times
+        float rSqr = r * r;
         if (maxToGet < objsToCheck.Count)
         {
             for (int i = 0; i < maxToGet; i++)
@@ -360,15 +279,45 @@ public class SpatialHash : MonoBehaviour
         return objsInRange;
     }
 
+    public List<GameObject> GetByRadius(Vector3 pos, float r)
+    {
+        List<GameObject> objsInRange = new List<GameObject>();
+
+        /*
+        //objects which may be within search radius from the cell containing pos and its neighbouring cells
+        //this is SLOW!
+        List<GameObject> objsToCheck = new List<GameObject>();
+        Vector3Int key = Key(pos);
+        for(int x = -1; x <= 1; x++)
+        {
+            for (int y = -1; y <= 1; y++)
+            {
+                for (int z = -1; z <= 1; z++)
+                {
+                    objsToCheck.AddRange(Get(new Vector3Int(key.x + x, key.y + y, key.z + z)));
+                }
+            }
+        }
+        */
+
+        //check distance on objects within cellsToCheck
+        List<GameObject> objsToCheck = Get(Key(pos));
+        float rSqr = r * r;
+        for (int i = 0; i < objsToCheck.Count; i++)
+        {
+            if (Vector3.SqrMagnitude(pos - objsToCheck[i].transform.position) <= rSqr) objsInRange.Add(objsToCheck[i]);
+        }
+
+        return objsInRange;
+    }
+
     //returns a list of GameObjects <= r distance from pos. DOES remove duplicates (big objects added to more than one bucket by AddByAABB),
     //but is slower than GetByRadius (which doesn't remove duplicates)
     //TODO: use a HashSet then convert to list? https://docs.microsoft.com/en-us/dotnet/api/system.collections.generic.hashset-1?redirectedfrom=MSDN&view=netframework-4.7.2
     /*
     public List<GameObject> GetByRadiusNoDups(Vector3 pos, float r)
     {
-        List<GameObject> objects = new List<GameObject>();
-
-        return objects;
+        throw new NotImplementedException();
     }
     */
 
@@ -405,27 +354,9 @@ public class SpatialHash : MonoBehaviour
         return emptyCells;
     }
 
-    //returns a list of the world positions of cells in the spatial hash
-    public List<Vector3Int> GetCellKeys()
-    {
-        return cells.Keys.ToList();
-    }
 
-    //returns a list of the world positions of cells in the spatial hash containing objects
-    public List<Vector3Int> GetNonEmptyCellKeys()
-    {
-        List<Vector3Int> keys = new List<Vector3Int>();
-
-        foreach (KeyValuePair<Vector3Int, Cell> item in cells)
-        {
-            if (!item.Value.IsEmpty()) keys.Add(item.Key);
-        }
-
-        return keys;
-    }
-
-    //Clears each bucket in the buckets dictionary. Does not delete the buckets themselves
-    public void ClearBuckets()
+    //Clears each cell in the cells dictionary. Does not delete the cells themselves
+    public void ClearCells()
     {
         foreach(KeyValuePair<Vector3Int, Cell> bucket in cells)
         {
@@ -469,27 +400,6 @@ public class SpatialHash : MonoBehaviour
     {
         return (int)(f + 32768f) - 32768;
     }
-
-    /*
-    //generate a key for the given GameObject (using its transform.position)
-    //see https://unionassets.com/blog/spatial-hashing-295 for hash function
-    private int Key(GameObject o)
-    {
-        return ((FastFloor(o.transform.position.x / cellSizeX) * 73856093) ^
-                (FastFloor(o.transform.position.y / cellSizeY) * 19349663) ^
-                (FastFloor(o.transform.position.z / cellSizeZ) * 83492791));
-    }
-
-    //generate a key for the given Vector3
-    //see https://unionassets.com/blog/spatial-hashing-295 for hash function
-    private int Key(Vector3 pos)
-    {
-        
-        return ((FastFloor(pos.x / cellSizeX) * 73856093) ^
-                (FastFloor(pos.y / cellSizeY) * 19349663) ^
-                (FastFloor(pos.z / cellSizeZ) * 83492791));
-    }
-    */
 
     /*----DEBUG/VISUALISATION FUNCTIONS - PASS DEBUG DATA TO SpatialHashDebug.cs ----*/
     public int DEBUG_GetIncludedObjsCount()

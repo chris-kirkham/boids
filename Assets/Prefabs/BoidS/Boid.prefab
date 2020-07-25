@@ -59,6 +59,7 @@ MeshRenderer:
   m_LightProbeUsage: 1
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 2
+  m_RayTraceProcedural: 0
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -83,6 +84,7 @@ MeshRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
+  m_AdditionalVertexStreams: {fileID: 0}
 --- !u!114 &3850222771705713791
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,12 +100,12 @@ MonoBehaviour:
   boidCollectiveController: {fileID: 0}
   mouseTargetObj: {fileID: 11400000, guid: ae7943ed48c50944dad07c6463595d84, type: 2}
   boidAvoidDistance: 10
-  boidAvoidSpeed: 1000
+  boidAvoidSpeed: 2
   numClosestToCheck: 5
   useCursorFollow: 0
-  cursorFollowSpeed: 1
+  cursorFollowSpeed: 5
   useRandomGoal: 0
-  goalFollowSpeed: 0.1
+  goalFollowSpeed: 1
   useBoundingCoordinates: 0
   boundsSize: 400
   boundsReturnSpeed: 1
@@ -112,7 +114,8 @@ MonoBehaviour:
   obstacleAvoidDistance: 10
   obstacleAvoidSpeed: 1
   idleNoiseFrequency: 0.01
-  idleSpeed: 1
+  idleSpeed: 10
+  useTimeOffset: 0
 --- !u!114 &3874422388245287640
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -126,11 +129,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   hashName: BoidSpatialHash
-  overlapSphereRadius: 10
+  overlapSphereRadius: 20
   useAdaptiveOverlapSphere: 0
-  minAdaptiveOverlapRadius: 1
-  maxAdaptiveOverlapRadius: 50
-  maxSeenBoidsToStore: 5
+  minAdaptiveOverlapRadius: 5
+  maxAdaptiveOverlapRadius: 10
+  maxSeenBoidsToStore: 10
   useFastHashCheck: 0
 --- !u!114 &1943009232639113900
 MonoBehaviour:
@@ -158,4 +161,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxSpeed: 25
-  smoothTime: 5
+  smoothTime: 2
+  rollAmount: 10

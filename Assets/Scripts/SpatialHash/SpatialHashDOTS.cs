@@ -16,7 +16,7 @@ public class SpatialHashDOTS : MonoBehaviour
         private NativeList<PositionVelocity> posVels;
         private const int INIT_SIZE = 1000;
 
-        private const float emptyTimeout = 5f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
+        private const float emptyTimeout = 100f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
         private float timeout;
 
         public BlittableBoidCell(GameObject obj)
@@ -104,10 +104,6 @@ public class SpatialHashDOTS : MonoBehaviour
 
     }
 
-
-
-    //public float maxWidth, maxHeight;
-
     public float cellSizeX, cellSizeY, cellSizeZ;
     public int initNumCellsX, initNumCellsY, initNumCellsZ;
 
@@ -118,8 +114,6 @@ public class SpatialHashDOTS : MonoBehaviour
     public bool useAABB;
 
     private Dictionary<Vector3Int, BlittableBoidCell> cells; //<key, bucket> dictionary representing each spatial cell's key and its contents
-
-    //private Dictionary<Vector3Int, float> timeouts; //stores the timeout timers of each cell in the hash
 
     //objects to be put into cells by the spatial hash algorithm; each GameObject with a HashObject script (which points to the GameObject with this script) 
     //will add itself to includedObjs on Start() and remove itself on OnDestroy()

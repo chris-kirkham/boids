@@ -231,19 +231,19 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
 
     Vector3 FollowCursor()
     {
-        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position) * cursorFollowSpeed : Vector3.zero;
+        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position).normalized * cursorFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveToGoal()
     {
-        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position) * goalFollowSpeed : Vector3.zero;
+        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position).normalized * goalFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveIdle() 
     {
-        Vector3 idleDir = DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, Time.timeSinceLevelLoad);
+        Vector3 idleDir = DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, useTimeOffset ? Time.timeSinceLevelLoad : 0f);
         Debug.DrawRay(transform.position, idleDir, Color.magenta, 0.1f);
-        return DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, Time.timeSinceLevelLoad);
+        return DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, useTimeOffset ? Time.timeSinceLevelLoad : 0);
     }
 
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules

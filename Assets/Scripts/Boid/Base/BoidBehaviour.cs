@@ -49,6 +49,7 @@ public abstract class BoidBehaviour : MonoBehaviour
     [Header("Idle behaviour")]
     public float idleNoiseFrequency = 0.01f;
     public float idleSpeed = 1f;
+    public bool useTimeOffset = false;
 
     /*----OTHER MEMBER VARIABLES----*/
     //boid move direction - not updated every tick, but stored so it can be used
