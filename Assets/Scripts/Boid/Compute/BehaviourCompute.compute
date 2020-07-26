@@ -1,0 +1,62 @@
+﻿//#include "Assets/Shaders/cginc/Perlin.cginc"
+
+// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+
+/* Flock behaviour params, same for each boid */
+//other boid reactions
+float avoidDist;
+float avoidSpeed;
+
+//cursor following
+bool usingCursorFollow;
+float cursorFollowSpeed;
+
+//movement bounds
+bool usingBounds;
+float boundsSize;
+float3 boundsCentre;
+float boundsReturnSpeed;
+
+//idle movement
+bool usingIdleMovement;
+float idleNoiseFrequency;
+float idleOffset;
+float idleSpeed;
+
+struct Boid
+{
+    float3 position, velocity;
+};
+
+RWStructuredBuffer<float4> Result;
+
+float3 ReactToOtherBoids()
+{
+
+}
+
+float3 MoveIdle()
+{
+
+}
+
+float3 FollowCursor()
+{
+
+}
+
+float3 ReturnToBounds()
+{
+
+}
+
+
+[numthreads(8,8,1)]
+void CSMain (uint3 id : SV_DispatchThreadID)
+{
+    // TODO: insert actual code here!
+
+    //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+}

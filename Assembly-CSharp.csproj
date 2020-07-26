@@ -84,6 +84,8 @@
     <Compile Include="Assets\Scripts\Boid\BoidCollectiveController.cs" />
   </ItemGroup>
   <ItemGroup>
+     <None Include="Assets\Shaders\cginc\Perlin.cginc" />
+     <None Include="Assets\Scripts\Boid\Compute\BehaviourCompute.compute" />
     <Reference Include="UnityEngine">
       <HintPath>C:\Program Files\Unity\Hub\Editor\2020.1.0f1\Editor\Data\Managed\UnityEngine\UnityEngine.dll</HintPath>
     </Reference>
