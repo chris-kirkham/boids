@@ -1,0 +1,31 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 704c2dc85af21b1459d0181de1de7008, type: 3}
+  m_Name: BoidBehaviourParams
+  m_EditorClassIdentifier: 
+  boidAvoidDistance: 5
+  boidAvoidSpeed: 10
+  numClosestToCheck: 5
+  useCursorFollow: 1
+  cursorFollowSpeed: 5
+  useRandomGoal: 0
+  goalFollowSpeed: 1
+  useBoundingCoordinates: 1
+  boundsSize: 400
+  boundsReturnSpeed: 1
+  usePreemptiveObstacleAvoidance: 1
+  useObstacleRepulsion: 1
+  obstacleAvoidDistance: 10
+  obstacleAvoidSpeed: 100
+  idleNoiseFrequency: 0.01
+  idleSpeed: 1
+  useTimeOffset: 0

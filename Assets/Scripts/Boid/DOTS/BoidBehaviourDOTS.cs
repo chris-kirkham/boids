@@ -44,17 +44,17 @@ public class BoidBehaviourDOTS : BoidBehaviour
                 pos = transform.position,
                 seenBoidPositions = this.seenBoidPositions,
                 seenBoidVelocities = this.seenBoidVelocities,
-                boidAvoidSpeed = this.boidAvoidSpeed,
+                boidAvoidSpeed = behaviourParams.boidAvoidSpeed,
                 sqrBoidAvoidDistance = this.sqrBoidAvoidDistance,
                 useMouseFollow = ControlInputs.Instance.useMouseFollow,
                 mouseTarget = this.mouseTarget,
-                mouseFollowSpeed = this.cursorFollowSpeed,
+                mouseFollowSpeed = behaviourParams.cursorFollowSpeed,
                 useBoundingCoordinates = ControlInputs.Instance.useBoundingCoordinates,
                 positiveBounds = this.positiveBounds,
                 negativeBounds = this.negativeBounds,
-                boundsAvoidSpeed = this.boundsReturnSpeed,
-                idleNoiseFrequency = this.idleNoiseFrequency,
-                offset = useTimeOffset ? Time.timeSinceLevelLoad : 0,
+                boundsAvoidSpeed = behaviourParams.boundsReturnSpeed,
+                idleNoiseFrequency = behaviourParams.idleNoiseFrequency,
+                offset = behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0,
                 resultDir = this.resultDir
             };
             jobHandle = job.Schedule();

@@ -69,6 +69,7 @@
     <Compile Include="Assets\Scripts\Utility\Noise\Perlin.cs" />
     <Compile Include="Assets\Scripts\Boid\Base\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHash.cs" />
+    <Compile Include="Assets\Scripts\ScriptableObjects\BoidParams\BoidBehaviourParams.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\DirectionalPerlin.cs" />
     <Compile Include="Assets\Scripts\ControlInputs.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDebug.cs" />
@@ -680,6 +681,12 @@
     <Reference Include="Unity.RenderPipelines.Core.Runtime">
       <HintPath>Library\ScriptAssemblies\Unity.RenderPipelines.Core.Runtime.dll</HintPath>
     </Reference>
+    <Reference Include="Unity.Build.SlimPlayerRuntime">
+      <HintPath>Library\ScriptAssemblies\Unity.Build.SlimPlayerRuntime.dll</HintPath>
+    </Reference>
+    <Reference Include="Unity.Scenes">
+      <HintPath>Library\ScriptAssemblies\Unity.Scenes.dll</HintPath>
+    </Reference>
     <Reference Include="Unity.Scenes.Editor">
       <HintPath>Library\ScriptAssemblies\Unity.Scenes.Editor.dll</HintPath>
     </Reference>
@@ -781,12 +788,6 @@
     </Reference>
     <Reference Include="com.unity.multiplayer-hlapi.Runtime">
       <HintPath>Library\ScriptAssemblies\com.unity.multiplayer-hlapi.Runtime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Build.SlimPlayerRuntime">
-      <HintPath>Library\ScriptAssemblies\Unity.Build.SlimPlayerRuntime.dll</HintPath>
-    </Reference>
-    <Reference Include="Unity.Scenes">
-      <HintPath>Library\ScriptAssemblies\Unity.Scenes.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

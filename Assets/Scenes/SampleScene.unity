@@ -38,7 +38,7 @@ RenderSettings:
   m_ReflectionIntensity: 1
   m_CustomReflection: {fileID: 0}
   m_Sun: {fileID: 0}
-  m_IndirectSpecularColor: {r: 0, g: 0, b: 0, a: 1}
+  m_IndirectSpecularColor: {r: 0.42207006, g: 0.45240974, b: 0.47388762, a: 1}
   m_UseRadianceAmbientProbe: 0
 --- !u!157 &3
 LightmapSettings:
@@ -97,7 +97,8 @@ LightmapSettings:
     m_ExportTrainingData: 0
     m_TrainingDataDestination: TrainingData
     m_LightProbeSampleCountMultiplier: 4
-  m_LightingDataAsset: {fileID: 0}
+  m_LightingDataAsset: {fileID: 112000000, guid: ebcc26c1f16e8c540965a1977baa77ee,
+    type: 2}
   m_LightingSettings: {fileID: 342951620}
 --- !u!196 &4
 NavMeshSettings:
@@ -27444,17 +27445,17 @@ PrefabInstance:
     - target: {fileID: 6973999833308494727, guid: 0266f9263f940e249978260186741ef4,
         type: 3}
       propertyPath: cellSizeX
-      value: 40
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 6973999833308494727, guid: 0266f9263f940e249978260186741ef4,
         type: 3}
       propertyPath: cellSizeY
-      value: 40
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 6973999833308494727, guid: 0266f9263f940e249978260186741ef4,
         type: 3}
       propertyPath: cellSizeZ
-      value: 40
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 6973999833308494727, guid: 0266f9263f940e249978260186741ef4,
         type: 3}

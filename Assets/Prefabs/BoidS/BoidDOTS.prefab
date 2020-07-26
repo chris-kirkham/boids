@@ -97,24 +97,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d8a5ec54944fbac46b4536ae0f12f88d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  behaviourParams: {fileID: 11400000, guid: 0b8a813a78a8ada4a807e74ea033b89d, type: 2}
   boidCollectiveController: {fileID: 0}
   mouseTargetObj: {fileID: 11400000, guid: ae7943ed48c50944dad07c6463595d84, type: 2}
-  boidAvoidDistance: 5
-  boidAvoidSpeed: 1
-  numClosestToCheck: 5
-  useCursorFollow: 0
-  cursorFollowSpeed: 1
-  useRandomGoal: 0
-  goalFollowSpeed: 1
-  useBoundingCoordinates: 1
-  boundsSize: 400
-  boundsReturnSpeed: 1
-  usePreemptiveObstacleAvoidance: 0
-  useObstacleRepulsion: 1
-  obstacleAvoidDistance: 10
-  obstacleAvoidSpeed: 5
-  idleNoiseFrequency: 0.01
-  idleSpeed: 1
 --- !u!114 &7827098214039631492
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -148,6 +133,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   maxSpeed: 25
   smoothTime: 5
+  rollAmount: 10
 --- !u!114 &4876609373067108080
 MonoBehaviour:
   m_ObjectHideFlags: 0

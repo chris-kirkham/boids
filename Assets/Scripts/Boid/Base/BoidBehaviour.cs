@@ -9,8 +9,8 @@ using UnityEngine.EventSystems;
 //[RequireComponent(typeof(BoidMovement))]
 public abstract class BoidBehaviour : MonoBehaviour 
 {
-    /*----BOID BEHAVIOUR PARAMS/COMPONENTS----*/
     [Header("Components")]
+    public BoidBehaviourParams behaviourParams;
     public BoidCollectiveController boidCollectiveController;
     public MouseTargetPosition mouseTargetObj; //ScriptableObject which holds mouse target position, if using mouse following
     protected Vector3 mouseTarget; //convenience var to hold mouse target position
@@ -18,38 +18,17 @@ public abstract class BoidBehaviour : MonoBehaviour
     protected BoidMovement boidMovement;
 
     [Header("Reaction to other boids")]
-    public float boidAvoidDistance = 1f;
     protected float sqrBoidAvoidDistance;
-    public float boidAvoidSpeed = 1f;
-    public int numClosestToCheck = 5;
-
-    [Header("Cursor/goal following")]
-    public bool useCursorFollow;
-    public float cursorFollowSpeed = 1f;
-    public bool useRandomGoal;
-    public float goalFollowSpeed = 1f; 
 
     [Header("Bounding coordinates")]
-    public bool useBoundingCoordinates = true;
-    public float boundsSize; //size of cube representing boid bounding area (centre is at (0, 0, 0))
     protected Vector3 positiveBounds, negativeBounds; //bounding coords (from boundsBox object)
-    public float boundsReturnSpeed = 1f;
     protected const float OUT_OF_BOUNDS_VELOCITY = 10f; //velocity with which to return to bounding area if out of bounds (added to other velocities so will be capped after)
 
     [Header("Obstacle avoidance")]
-    public bool usePreemptiveObstacleAvoidance = true;
-    public bool useObstacleRepulsion = true;
-    public float obstacleAvoidDistance;
-    public float obstacleAvoidSpeed = 5f;
     protected const float OBSTACLE_CRITICAL_DISTANCE = 10f; //distance at which boid is considered critically close to an obstacle, and will prioritise its avoidance
     protected const float OBSTACLE_CHECK_DISTANCE = 50f; //distance from boid to cast ray to check if boid is heading towards an obstacle
     protected const int MAX_OBSTACLE_RAYCAST_TRIES = 4; //max number of raycast iterations the boid can perform to find a path around an obstacle
     protected const float OBSTACLE_AVOID_RAY_INCREMENT = 25; //number to increase/decrease the x/y/z (depending on direction) of each raycast by when trying to find path around obstacle
-
-    [Header("Idle behaviour")]
-    public float idleNoiseFrequency = 0.01f;
-    public float idleSpeed = 1f;
-    public bool useTimeOffset = false;
 
     /*----OTHER MEMBER VARIABLES----*/
     //boid move direction - not updated every tick, but stored so it can be used
@@ -71,9 +50,9 @@ public abstract class BoidBehaviour : MonoBehaviour
         boidVision = GetComponent<BoidVision>();
         boidMovement = GetComponent<BoidMovement>();
 
-        sqrBoidAvoidDistance = boidAvoidDistance * boidAvoidDistance;
+        sqrBoidAvoidDistance = behaviourParams.boidAvoidDistance * behaviourParams.boidAvoidDistance;
         
-        float halfBoundsSize = boundsSize / 2;
+        float halfBoundsSize = behaviourParams.boundsSize / 2;
         positiveBounds = new Vector3(halfBoundsSize, halfBoundsSize, halfBoundsSize);
         negativeBounds = new Vector3(-halfBoundsSize, -halfBoundsSize, -halfBoundsSize);
 
@@ -96,7 +75,7 @@ public abstract class BoidBehaviour : MonoBehaviour
 
     protected virtual void OnValidate()
     {
-        sqrBoidAvoidDistance = boidAvoidDistance * boidAvoidDistance;
+        sqrBoidAvoidDistance = behaviourParams.boidAvoidDistance * behaviourParams.boidAvoidDistance;
     }
 
     //Called in UpdateBoidCoroutine; put boid update code here

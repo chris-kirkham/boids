@@ -57,7 +57,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
                 boundsAvoidVector.z += Mathf.Abs(transform.position.z - negativeBounds.z);
             }
 
-            boundsAvoidVector *= boundsReturnSpeed;
+            boundsAvoidVector *= behaviourParams.boundsReturnSpeed;
         }
 
         return boundsAvoidVector;
@@ -79,7 +79,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         else
         {
             //check if numClosestToCheck > number of visible boids
-            int numToCheck = Mathf.Min(numClosestToCheck, boidVision.SeenBoids.Count);
+            int numToCheck = Mathf.Min(behaviourParams.numClosestToCheck, boidVision.SeenBoids.Count);
 
             for (int i = 0; i < numToCheck; i++)
             {
@@ -101,14 +101,14 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             velocityMatch = velocityMatch / boidVision.SeenBoids.Count;
         }
 
-        return (boidAvoidVector * boidAvoidSpeed) + centre + velocityMatch;
+        return (boidAvoidVector * behaviourParams.boidAvoidSpeed) + centre + velocityMatch;
     }
 
     Vector3 Disperse(List<GameObject> seenBoids)
     {
         Vector3 disperse = Vector3.zero;
 
-        int numToCheck = Mathf.Min(numClosestToCheck, seenBoids.Count);
+        int numToCheck = Mathf.Min(behaviourParams.numClosestToCheck, seenBoids.Count);
         for(int i = 0; i < numToCheck; i++)
         {
             disperse -= seenBoids[i].transform.position - transform.position;
@@ -201,7 +201,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             if (foundAvoidVector)
             {
                 Debug.DrawRay(transform.position, closestVector, Color.green);
-                return closestVector * obstacleAvoidSpeed;
+                return closestVector * behaviourParams.obstacleAvoidSpeed;
             }
         }
 
@@ -226,31 +226,31 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         if (Physics.Raycast(transform.position, boidMovement.GetVelocity(), out RaycastHit hit, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulsionVec = hit.normal;
         //Debug.DrawRay(transform.position, repulsionVec, Color.yellow,  0.2f);
 
-        return repulsionVec * obstacleAvoidSpeed;
+        return repulsionVec * behaviourParams.obstacleAvoidSpeed;
     }
 
     Vector3 FollowCursor()
     {
-        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position).normalized * cursorFollowSpeed : Vector3.zero;
+        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position).normalized * behaviourParams.cursorFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveToGoal()
     {
-        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position).normalized * goalFollowSpeed : Vector3.zero;
+        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position).normalized * behaviourParams.goalFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveIdle() 
     {
-        Vector3 idleDir = DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, useTimeOffset ? Time.timeSinceLevelLoad : 0f);
+        Vector3 idleDir = DirectionalPerlin.Directional3D(transform.position, behaviourParams.idleNoiseFrequency, behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0f);
         Debug.DrawRay(transform.position, idleDir, Color.magenta, 0.1f);
-        return DirectionalPerlin.Directional3D(transform.position, idleNoiseFrequency, useTimeOffset ? Time.timeSinceLevelLoad : 0);
+        return DirectionalPerlin.Directional3D(transform.position, behaviourParams.idleNoiseFrequency, behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0);
     }
 
     //calculates and returns a velocity vector based on a priority ordering of the boid's rules
     Vector3 CalcRules()
     {
-        Vector3 avoidVector = usePreemptiveObstacleAvoidance ? AvoidObstacles() : Vector3.zero; //non-zero if using obstacle avoidance and boid is heading towards an obstacle
-        Vector3 repulsionVector = useObstacleRepulsion ? ObstacleRepulsion() : Vector3.zero;
+        Vector3 avoidVector = behaviourParams.usePreemptiveObstacleAvoidance ? AvoidObstacles() : Vector3.zero; //non-zero if using obstacle avoidance and boid is heading towards an obstacle
+        Vector3 repulsionVector = behaviourParams.useObstacleRepulsion ? ObstacleRepulsion() : Vector3.zero;
         if (!(avoidVector == Vector3.zero)) //prioritise obstacle avoidance
         {
             return avoidVector + repulsionVector + ReactToOtherBoids();
