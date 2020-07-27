@@ -1,9 +1,10 @@
 /// Perlin noise implementation for shaders. Original implementation from https://github.com/keijiro/PerlinNoise/blob/master/Assets/Perlin.cs
 /// except for the FastFloor functions, which are from https://www.codeproject.com/Tips/700780/Fast-floor-ceiling-functions
 
+
 static const float tau = 2 * 3.14159f;
 
-static int perm[255] = {
+static int perm[257] = {
 	151,160,137,91,90,15,
 	131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
 	190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -20,22 +21,49 @@ static int perm[255] = {
 	151
 };
 
+static float Fade(float t)
+{
+	return t * t * t * (t * (t * 6 - 15) + 10);
+}
+
+static float Lerp(float t, float a, float b)
+{
+	return a + t * (b - a);
+}
+
+static float Grad(int hash, float x)
+{
+	return (hash & 1) == 0 ? x : -x;
+}
+
+static float Grad(int hash, float x, float y)
+{
+	return ((hash & 1) == 0 ? x : -x) + ((hash & 2) == 0 ? y : -y);
+}
+
+static float Grad(int hash, float x, float y, float z)
+{
+	int h = hash & 15;
+	int u = h < 8 ? x : y;
+	int v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
+	return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
+}
+
 static float FastFloor(float f)
 {
-	return (int)(f + 32768f) - 32768;
+	return (int)(f + 32768.0f) - 32768.0f;
 }
 
 static int FastFloorToInt(float f)
 {
-	return (int)(f + 32768f) - 32768;
+	return (int)(f + 32768.0f) - 32768.0f;
 }
-
 
 float Noise(float x)
 {
-	int X = FastFloorToInt(x) & 0xff;
+	int X = (int)floor(x) & 0xff;
 	x -= FastFloor(x);
-	var u = Fade(x);
+	float u = Fade(x);
 	return Lerp(u, Grad(perm[X], x), Grad(perm[X + 1], x - 1)) * 2;
 }
 
@@ -81,7 +109,7 @@ float Noise(float x, float y, float z)
 						   Lerp(u, Grad(perm[AB + 1], x, y - 1, z - 1), Grad(perm[BB + 1], x - 1, y - 1, z - 1))));
 }
 
-Noise(float3 coord)
+float Noise(float3 coord)
 {
 	return Noise(coord.x, coord.y, coord.z);
 }
@@ -89,14 +117,26 @@ Noise(float3 coord)
 float2 PointOnUnitCircle(float2 coord)
 {
 	float theta = Noise(coord) * tau;
-	return new float2(Mathf.Cos(theta), Mathf.Sin(theta));
+	return float2(cos(theta), sin(theta));
 }
 
 float3 PointOnUnitSphere(float3 coord)
 {
 	float theta = Noise(coord.y, coord.z) * tau;
 	float phi = Noise(coord.x, coord.y) * tau;
-	return new float3(Mathf.Cos(theta), Mathf.Sin(theta), Mathf.Cos(phi));
+	return float3(cos(theta), sin(theta), cos(phi));
+}
+
+float2 Directional2D(float2 pos, float frequency, float offset = 0)
+{
+	float2 coord = float2((pos.x + offset) * frequency, (pos.y + offset) * frequency + offset);
+	return PointOnUnitCircle(coord);
+}
+
+float3 Directional3D(float3 pos, float frequency, float offset = 0)
+{
+	float3 coord = float3((pos.x + offset) * frequency, (pos.y + offset) * frequency, (pos.z + offset) * frequency);
+	return PointOnUnitSphere(coord);
 }
 
 float Fbm(float x, int octave)
@@ -127,7 +167,7 @@ float Fbm(float2 coord, int octave)
 
 float Fbm(float x, float y, int octave)
 {
-	return Fbm(new float2(x, y), octave);
+	return Fbm(float2(x, y), octave);
 }
 
 float Fbm(float3 coord, int octave)
@@ -145,33 +185,7 @@ float Fbm(float3 coord, int octave)
 
 float Fbm(float x, float y, float z, int octave)
 {
-	return Fbm(new float3(x, y, z), octave);
+	return Fbm(float3(x, y, z), octave);
 }
 
-float Fade(float t)
-{
-	return t * t * t * (t * (t * 6 - 15) + 10);
-}
 
-float Lerp(float t, float a, float b)
-{
-	return a + t * (b - a);
-}
-
-float Grad(int hash, float x)
-{
-	return (hash & 1) == 0 ? x : -x;
-}
-
-float Grad(int hash, float x, float y)
-{
-	return ((hash & 1) == 0 ? x : -x) + ((hash & 2) == 0 ? y : -y);
-}
-
-float Grad(int hash, float x, float y, float z)
-{
-	var h = hash & 15;
-	var u = h < 8 ? x : y;
-	var v = h < 4 ? y : (h == 12 || h == 14 ? x : z);
-	return ((h & 1) == 0 ? u : -u) + ((h & 2) == 0 ? v : -v);
-}

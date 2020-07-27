@@ -2,17 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class NumBoids : MonoBehaviour
+[CreateAssetMenu(menuName = "Scriptable Objects/BoidCounter")]
+public class BoidCounter : ScriptableObject
 {
-    // Start is called before the first frame update
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+    public int numBoids = 0;
 }

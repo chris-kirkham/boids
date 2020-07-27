@@ -15,7 +15,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
 
     void Update()
     {
-        if (ControlInputs.Instance.useMouseFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
+        if (behaviourParams.useCursorFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
     }
 
     void FixedUpdate()
@@ -27,7 +27,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
     {
         Vector3 boundsAvoidVector = Vector3.zero;
 
-        if (ControlInputs.Instance.useBoundingCoordinates)
+        if (behaviourParams.useBoundingCoordinates)
         {
             //if close to edge of bounding box, move away from the edge
             if (transform.position.x > positiveBounds.x)
@@ -129,7 +129,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         //find avoid vector which is closest to either current velocity vector or mouse target, depending on if using mouse follow.
         Vector3 target;
         float checkDistance;
-        if (ControlInputs.Instance.useMouseFollow)
+        if (behaviourParams.useCursorFollow)
         {
             target = mouseTarget - transform.position;
             checkDistance = Vector3.Distance(transform.position, mouseTarget);
@@ -231,12 +231,12 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
 
     Vector3 FollowCursor()
     {
-        return (ControlInputs.Instance.useMouseFollow) ? (mouseTarget - transform.position).normalized * behaviourParams.cursorFollowSpeed : Vector3.zero;
+        return (behaviourParams.useCursorFollow) ? (mouseTarget - transform.position).normalized * behaviourParams.cursorFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveToGoal()
     {
-        return (ControlInputs.Instance.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position).normalized * behaviourParams.goalFollowSpeed : Vector3.zero;
+        return (behaviourParams.useRandomGoal) ? (boidCollectiveController.GetGoal() + transform.position).normalized * behaviourParams.goalFollowSpeed : Vector3.zero;
     }
 
     Vector3 MoveIdle() 
@@ -255,7 +255,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
         {
             return avoidVector + repulsionVector + ReactToOtherBoids();
         }
-        else if (boidVision.SeenBoids.Count == 0 && !ControlInputs.Instance.useMouseFollow) //if no boids nearby, not avoiding an obstacle, and not following mouse, do idle behaviour
+        else if (boidVision.SeenBoids.Count == 0 && !behaviourParams.useCursorFollow) //if no boids nearby, not avoiding an obstacle, and not following mouse, do idle behaviour
         {
             return MoveIdle() + repulsionVector + ReturnToBounds();
         }

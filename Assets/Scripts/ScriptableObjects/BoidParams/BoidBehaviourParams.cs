@@ -28,6 +28,7 @@ public class BoidBehaviourParams : ScriptableObject
     public float obstacleAvoidSpeed = 5f;
 
     [Header("Idle behaviour")]
+    public bool useIdleMvmt = true;
     public float idleNoiseFrequency = 0.01f;
     public float idleSpeed = 1f;
     public bool useTimeOffset = false;

@@ -3,6 +3,25 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
+#define GROUP_SIZE 512
+
+/* boids */
+struct Boid
+{
+    float3 position, velocity;
+};
+
+Boid ConstructBoid(float3 position, float3 velocity)
+{
+    Boid boid;
+    boid.position = position;
+    boid.velocity = velocity;
+
+    return boid;
+}
+
+RWStructuredBuffer<Boid> boids;
+uint numBoids;
 
 /* Flock behaviour params, same for each boid */
 //other boid reactions
@@ -19,24 +38,50 @@ float boundsSize;
 float3 boundsCentre;
 float boundsReturnSpeed;
 
-//idle movement
-bool usingIdleMovement;
+//idle move
+bool usingIdleMvmt;
 float idleNoiseFrequency;
 float idleOffset;
 float idleSpeed;
 
-struct Boid
+float3 ReactToOtherBoids(uint id)
 {
-    float3 position, velocity;
-};
+    Boid boid = boids[id];
+    float3 pos = boid.position;
+    float3 vel = boid.velocity;
 
-RWStructuredBuffer<float4> Result;
+    float3 newVel = vel; //new position of boid after applying flocking rules
+    
+    float3 avoidDir = float3(0, 0, 0);
+    float3 centre = float3(0, 0, 0);
+    float3 velocityMatch = float3(0, 0, 0);
 
-float3 ReactToOtherBoids()
-{
+    uint neighbourCount = 0;
+    for (uint i = 0; i < numBoids; i++)
+    {
+        if (i != id)
+        {
+            neighbourCount++;
 
+            Boid otherBoid = boids[i];
+            if (distance(pos, otherBoid.position) < avoidDist)
+            {
+                avoidDir += vel - otherBoid.position;
+                centre += otherBoid.position - pos;
+                velocityMatch += otherBoid.velocity;
+            }
+        }
+    }
+
+    float avg = 1 / neighbourCount;
+    centre *= avg;
+    velocityMatch *= avg;
+
+    newVel += (avoidDir * avoidSpeed) + centre + velocityMatch;
+    return newVel;
 }
 
+/*
 float3 MoveIdle()
 {
 
@@ -51,12 +96,11 @@ float3 ReturnToBounds()
 {
 
 }
+*/
 
-
-[numthreads(8,8,1)]
+[numthreads(GROUP_SIZE,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    // TODO: insert actual code here!
-
-    //Result[id.xy] = float4(id.x & id.y, (id.x & 15)/15.0, (id.y & 15)/15.0, 0.0);
+    float3 newVel = ReactToOtherBoids(id.x);
+    boids[id.x] = ConstructBoid(boids[id.x].position, newVel);
 }

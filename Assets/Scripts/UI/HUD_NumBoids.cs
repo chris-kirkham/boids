@@ -14,7 +14,6 @@ public class HUD_NumBoids : MonoBehaviour
         SetNumBoidsText(boidSpawner.GetBoidCount());
     }
 
-    // Update is called once per frame
     void Update()
     {
         SetNumBoidsText(boidSpawner.GetBoidCount());

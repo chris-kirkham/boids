@@ -55,33 +55,36 @@
     <Analyzer Include="C:\Program Files (x86)\Microsoft Visual Studio Tools for Unity\16.0\Analyzers\Microsoft.Unity.Analyzers.dll" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Assets\Scripts\Boid\Base\BoidMovement.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidMovement\BoidMovement.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\MouseTargetPosition.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_FrameTime.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_NumBoids.cs" />
     <Compile Include="Assets\Scripts\MouseTargetController.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDOTS.cs" />
-    <Compile Include="Assets\Scripts\Boid\DOTS\BoidBehaviourDOTS.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviourDOTS.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidSpawner.cs" />
-    <Compile Include="Assets\Scripts\Boid\DOTS\Components\Position.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidBehaviour_Singlethreaded.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidVision.cs" />
+    <Compile Include="Assets\Scripts\Boid\ECS\Components\Position.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour_Singlethreaded.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidVision\BoidVision.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\Perlin.cs" />
-    <Compile Include="Assets\Scripts\Boid\Base\BoidBehaviour.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHash.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\BoidParams\BoidBehaviourParams.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\DirectionalPerlin.cs" />
     <Compile Include="Assets\Scripts\ControlInputs.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDebug.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidMovement_Rigidbody.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidMovement\BoidMovement_Rigidbody.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\PositionVelocity.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\HashObject.cs" />
-    <Compile Include="Assets\Scripts\Boid\DOTS\BoidVisionDOTS.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidMovement_NoRigidbody.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidVision\BoidVisionDOTS.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidMovement\BoidMovement_NoRigidbody.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_MouseFollow.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidCollectiveController.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidController\BoidCollectiveController.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour_ComputeFlocking.cs" />
+    <Compile Include="Assets\Scripts\Boid\Compute\BehaviourComputeScript.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidController\BoidParamsUpdater.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Shaders\cginc\Perlin.cginc" />

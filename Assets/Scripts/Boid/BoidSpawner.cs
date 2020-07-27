@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 //Handles the spawning and destruction of boids around the attached GameObject
@@ -41,7 +42,10 @@ public class BoidSpawner : MonoBehaviour {
     {
         if (ControlInputs.Instance.spawnNewBoid) 
         {
-            for (int i = 0; i < 10; i++) SpawnBoid();
+            for (int i = 0; i < 10; i++)
+            {
+                SpawnBoid();
+            }
         }
         else if(ControlInputs.Instance.destroyBoid) //destroys last-created boid
         {
@@ -71,5 +75,10 @@ public class BoidSpawner : MonoBehaviour {
     public int GetBoidCount()
     {
         return boidCount;
+    }
+
+    public List<GameObject> GetBoids()
+    {
+        return boids.ToList();
     }
 }
