@@ -67,9 +67,12 @@
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour_Singlethreaded.cs" />
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidVision\BoidVision.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\Perlin.cs" />
+    <Compile Include="Assets\Scripts\Boid\Compute\BehaviourComputeScript.cs" />
+    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour_ComputeFlocking.cs" />
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHash.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\BoidParams\BoidBehaviourParams.cs" />
+    <Compile Include="Assets\Scripts\Boid\BoidController\BoidParamsUpdater.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\DirectionalPerlin.cs" />
     <Compile Include="Assets\Scripts\ControlInputs.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDebug.cs" />
@@ -82,9 +85,6 @@
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidCollectiveController.cs" />
-    <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour_ComputeFlocking.cs" />
-    <Compile Include="Assets\Scripts\Boid\Compute\BehaviourComputeScript.cs" />
-    <Compile Include="Assets\Scripts\Boid\BoidController\BoidParamsUpdater.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Shaders\cginc\Perlin.cginc" />

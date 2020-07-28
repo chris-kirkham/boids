@@ -1,5 +1,4 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  error: 2 plat 4 at BehaviourCompute.compute(13): syntax error: unexpected token '('
-  api=4 insize=2055 outsize=0 ok=0
+  api=4 insize=2731 outsize=1775 ok=1

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Unity.Entities.UniversalDelegates;
 using UnityEngine;
 
 public class BoidMovement_NoRigidbody : BoidMovement
@@ -32,7 +33,7 @@ public class BoidMovement_NoRigidbody : BoidMovement
     {
         transform.position = Vector3.SmoothDamp(transform.position, transform.position + (vel.normalized * maxSpeed), ref smoothDampVelocity, smoothTime, maxSpeed);
         if (smoothDampVelocity != Vector3.zero) transform.forward = smoothDampVelocity;
-        
+
         /*
         //apply roll based on local x velocity
         float localXVel = transform.InverseTransformDirection(velocity).x;

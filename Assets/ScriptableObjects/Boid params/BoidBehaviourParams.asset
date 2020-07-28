@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 704c2dc85af21b1459d0181de1de7008, type: 3}
   m_Name: BoidBehaviourParams
   m_EditorClassIdentifier: 
-  boidAvoidDistance: 1
+  boidAvoidDistance: 4
   boidAvoidSpeed: 1
   numClosestToCheck: 5
   useCursorFollow: 0
-  cursorFollowSpeed: 1
+  cursorFollowSpeed: 10
   useRandomGoal: 0
   goalFollowSpeed: 1
   useBoundingCoordinates: 1
@@ -28,5 +28,5 @@ MonoBehaviour:
   obstacleAvoidSpeed: 100
   useIdleMvmt: 1
   idleNoiseFrequency: 0.01
-  idleSpeed: 0.1
-  useTimeOffset: 0
+  idleSpeed: 1
+  useTimeOffset: 1

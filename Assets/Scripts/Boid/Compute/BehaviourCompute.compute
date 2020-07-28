@@ -3,9 +3,10 @@
 // Each #kernel tells which function to compile; you can have many kernels
 #pragma kernel CSMain
 
-#define GROUP_SIZE 512
+#define GROUP_SIZE 1024
+#define BOID_VISION_CONE_MIN_DOT -0.5f
 
-/* boids */
+/* Boids */
 struct Boid
 {
     float3 position, velocity;
@@ -25,12 +26,14 @@ uint numBoids;
 
 /* Flock behaviour params, same for each boid */
 //other boid reactions
+float viewDist;
 float avoidDist;
 float avoidSpeed;
 
 //cursor following
 bool usingCursorFollow;
 float cursorFollowSpeed;
+float3 cursorPos;
 
 //movement bounds
 bool usingBounds;
@@ -50,8 +53,6 @@ float3 ReactToOtherBoids(uint id)
     float3 pos = boid.position;
     float3 vel = boid.velocity;
 
-    float3 newVel = vel; //new position of boid after applying flocking rules
-    
     float3 avoidDir = float3(0, 0, 0);
     float3 centre = float3(0, 0, 0);
     float3 velocityMatch = float3(0, 0, 0);
@@ -61,46 +62,50 @@ float3 ReactToOtherBoids(uint id)
     {
         if (i != id)
         {
-            neighbourCount++;
-
             Boid otherBoid = boids[i];
-            if (distance(pos, otherBoid.position) < avoidDist)
+            float dist = distance(pos, otherBoid.position);
+            //if (dist < avoidDist && dot(normalize(vel), normalize(otherBoid.velocity)) > BOID_VISION_CONE_MIN_DOT)
+            if (dist < avoidDist)
             {
-                avoidDir += vel - otherBoid.position;
+                neighbourCount++;
+                avoidDir += (pos - otherBoid.position) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance
                 centre += otherBoid.position - pos;
                 velocityMatch += otherBoid.velocity;
             }
         }
     }
 
-    float avg = 1 / neighbourCount;
+    float avg = 1.0f / (float)(neighbourCount + (int)(neighbourCount == 0)); //if neighbourCount == 0, add 1 to avoid a divide-by-zero
     centre *= avg;
     velocityMatch *= avg;
 
-    newVel += (avoidDir * avoidSpeed) + centre + velocityMatch;
-    return newVel;
+    return (normalize(avoidDir) * avoidSpeed) + normalize(centre) + velocityMatch;
 }
 
 /*
-float3 MoveIdle()
+float3 MoveIdle(uint id)
 {
+    return normalize(Directional3D(boids[id].position, idleNoiseFrequency, idleOffset)) * idleSpeed * (int)usingIdleMvmt;
+}
+*/
 
+float3 FollowCursor(uint id)
+{
+    return normalize(cursorPos - boids[id].position) * cursorFollowSpeed * (int)usingCursorFollow;
 }
 
-float3 FollowCursor()
-{
-
-}
-
+/*
 float3 ReturnToBounds()
 {
-
+    
 }
 */
 
 [numthreads(GROUP_SIZE,1,1)]
 void CSMain (uint3 id : SV_DispatchThreadID)
 {
-    float3 newVel = ReactToOtherBoids(id.x);
-    boids[id.x] = ConstructBoid(boids[id.x].position, newVel);
+    float3 flocking = ReactToOtherBoids(id.x);
+    //float3 followCursor = FollowCursor(id.x);
+
+    boids[id.x] = ConstructBoid(boids[id.x].position, flocking); 
 }

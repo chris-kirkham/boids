@@ -1,6 +1,5 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  api=4 insize=1872 outsize=227 ok=1
-
-Quitting shader compiler process
+  error: 2 plat 4 at BehaviourCompute.compute(87): undeclared identifier 'Directional3D'
+  api=4 insize=2734 outsize=0 ok=0

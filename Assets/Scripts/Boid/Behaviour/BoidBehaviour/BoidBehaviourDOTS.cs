@@ -195,6 +195,22 @@ public class BoidBehaviourDOTS : BoidBehaviour
     }
 
     [BurstCompile]
+    private struct ObstacleAvoidJob : IJob
+    {
+        NativeArray<float3> repulseDirection;
+
+        NativeArray<RaycastCommand> rayCommands;
+        NativeArray<RaycastHit> rayResults;
+
+        public void Execute()
+        {
+
+        }
+
+        //if (Physics.Raycast(transform.position, boidMovement.GetVelocity(), out RaycastHit hit, OBSTACLE_CRITICAL_DISTANCE, LAYER_OBSTACLE)) repulseDirection = hit.normal;
+    }
+
+    [BurstCompile]
     private struct ObstacleRepulsionJob : IJob
     {
         NativeArray<float3> repulseDirection;

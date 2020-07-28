@@ -9,6 +9,9 @@ using UnityEngine.EventSystems;
 //[RequireComponent(typeof(BoidMovement))]
 public abstract class BoidBehaviour : MonoBehaviour 
 {
+    //Boid ID
+    public int BoidID { protected get; set; }
+
     [Header("Components")]
     public BoidBehaviourParams behaviourParams;
     public BoidCollectiveController boidCollectiveController;
@@ -39,7 +42,6 @@ public abstract class BoidBehaviour : MonoBehaviour
     protected const int LAYER_OBSTACLE = 1 << 10;
 
     //update time params
-    public float UpdateTimeID { protected get; set; }
     protected const float BASE_UPDATE_TIME_INTERVAL = 0.2f;
     protected const float MAX_UPDATE_STAGGER_TIME = 0.4f;
     protected const float UPDATE_TIME_VARIANCE = 0.1f; //vary time between boid updates so not all boids will update on the same frame
@@ -65,10 +67,10 @@ public abstract class BoidBehaviour : MonoBehaviour
         else
         {
             //updateTime = BASE_UPDATE_TIME_INTERVAL + ((UpdateTimeID / 100f) % mod);
-            updateTime = (UpdateTimeID / 100f) % mod;
+            updateTime = (BoidID / 100f) % mod;
         }
 
-        Debug.Log(updateTime);
+        //Debug.Log(updateTime);
         //TODO: set initial boid velocity
         StartCoroutine(UpdateBoidCoroutine());
     }

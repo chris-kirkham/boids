@@ -1,4 +1,7 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  api=4 insize=2046 outsize=1599 ok=1
+  error: 2 plat 4 at BehaviourCompute.compute(88): undeclared identifier 'Perlin'
+  api=4 insize=2681 outsize=0 ok=0
+
+Quitting shader compiler process

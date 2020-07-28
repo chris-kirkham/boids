@@ -94,14 +94,10 @@ public class SpatialHashDOTS : MonoBehaviour
         {
             return posVels.Length == 0;
         }
-
-
-        //utility
         private PositionVelocity GetObjPosVel(GameObject obj)
         {
             return new PositionVelocity(obj.transform.position, obj.GetComponent<Rigidbody>().velocity);
         }
-
     }
 
     public float cellSizeX, cellSizeY, cellSizeZ;

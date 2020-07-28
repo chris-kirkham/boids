@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using Unity.Mathematics;
+using UnityEditor;
+using UnityEngine.Rendering;
 using UnityEngine;
 
 public class BehaviourComputeScript : MonoBehaviour
@@ -9,13 +11,14 @@ public class BehaviourComputeScript : MonoBehaviour
     private int behaviourComputerKernelHandle;
     
     public BoidBehaviourParams behaviourParams;
+    public MouseTargetPosition mouseTargetPos;
     private BoidSpawner boidSpawner; 
 
     private List<GameObject> boids;
     private Boid_Compute[] boidComputeData;
 
     //struct containing info about a boid. Identical to the Boid struct in the compute shader
-    public struct Boid_Compute
+    private struct Boid_Compute
     {
         public float3 position, velocity;
 
@@ -39,9 +42,8 @@ public class BehaviourComputeScript : MonoBehaviour
 
     private void Update()
     {
-        boids = boidSpawner.GetBoids();
-        Debug.Log("number of boids = " + boids.Count);
-        DoCompute();
+        //boids = boidSpawner.GetBoids();
+        //DoCompute();
     }
 
     private void DoCompute()
@@ -63,12 +65,15 @@ public class BehaviourComputeScript : MonoBehaviour
         behaviourCompute.SetInt("numBoids", boids.Count);
 
         //flocking params
+        behaviourCompute.SetFloat("viewDist", behaviourParams.boidAvoidDistance * 4);
         behaviourCompute.SetFloat("avoidDist", behaviourParams.boidAvoidDistance);
         behaviourCompute.SetFloat("avoidSpeed", behaviourParams.boidAvoidSpeed);
 
         //cursor following
         behaviourCompute.SetBool("usingCursorFollow", behaviourParams.useCursorFollow);
         behaviourCompute.SetFloat("cursorFollowSpeed", behaviourParams.cursorFollowSpeed);
+        float[] cursorFollowPos = new float[3] { mouseTargetPos.mouseTargetPosition.x, mouseTargetPos.mouseTargetPosition.y, mouseTargetPos.mouseTargetPosition.z };
+        behaviourCompute.SetFloats("cursorPos", cursorFollowPos);
 
         //movement bounds
         behaviourCompute.SetBool("usingBounds", behaviourParams.useBoundingCoordinates);
@@ -89,5 +94,15 @@ public class BehaviourComputeScript : MonoBehaviour
         buffer.GetData(boidComputeData);
 
         buffer.Release();
+    }
+
+    public Vector3 GetVelocityFromComputeData(int boidID)
+    {
+        if(boidID < 0 || boidID >= boidComputeData.Length)
+        {
+            Debug.LogError("boidID outside of boidComputeData bounds! ID: " + boidID);
+            Debug.Break();
+        }
+        return boidComputeData[boidID].velocity;
     }
 }

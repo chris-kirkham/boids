@@ -1,26 +1,10 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  error: 2 plat 4 at Assets/Shaders/cginc/Perlin.cginc(8): 'FastFloor': function must return a value
-  error: 2 plat 4 at Assets/Shaders/cginc/Perlin.cginc(8): syntax error: unexpected token 'f'
-  api=4 insize=980 outsize=0 ok=0
+  error: 1 plat 4 at (0): Program 'CSMain', warning X4714: sum of temp registers and indexable temp registers times 256 threads exceeds the recommended total 16384.  Performance may be reduced
+  api=4 insize=2670 outsize=10760 ok=1
 Cmd: compileComputeKernel
-  api=4 insize=984 outsize=227 ok=1
-Cmd: compileComputeKernel
-  error: 2 plat 4 at Assets/Shaders/cginc/Perlin.cginc(6): 'perm': initializer does not match type
-  api=4 insize=982 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 2 plat 4 at Assets/Shaders/cginc/Perlin.cginc(3): failed to open source file: 'math.h'
-  api=4 insize=982 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 2 plat 4 at Assets/Shaders/cginc/Perlin.cginc(34): int or unsigned int type required
-  api=4 insize=1941 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 2 plat 4 at Assets/Shaders/cginc/Perlin.cginc(130): cannot implicitly convert from 'const float2' to 'float3'
-  api=4 insize=1941 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 2 plat 4 at BehaviourCompute.compute(71): syntax error: unexpected token '}'
-  api=4 insize=1871 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 1 plat 4 at BehaviourCompute.compute(49): signed/unsigned mismatch, unsigned assumed
-  api=4 insize=1875 outsize=227 ok=1
+  error: 1 plat 4 at (0): Program 'CSMain', warning X4714: sum of temp registers and indexable temp registers times 256 threads exceeds the recommended total 16384.  Performance may be reduced
+  api=4 insize=2852 outsize=11384 ok=1
+
+Quitting shader compiler process

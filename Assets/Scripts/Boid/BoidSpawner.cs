@@ -47,10 +47,12 @@ public class BoidSpawner : MonoBehaviour {
                 SpawnBoid();
             }
         }
+        /*
         else if(ControlInputs.Instance.destroyBoid) //destroys last-created boid
         {
             DestroyBoid();
         }
+        */
     }
 
     //spawn a boid at a random point in a cube around the spawner object
@@ -61,16 +63,18 @@ public class BoidSpawner : MonoBehaviour {
         Quaternion boidRotation = new Quaternion();
         boids.Push(Instantiate(boid, boidPosition, boidRotation));
         boidCount++;
-        boids.Peek().GetComponent<BoidBehaviour>().UpdateTimeID = boidCount;
+        boids.Peek().GetComponent<BoidBehaviour>().BoidID = boidCount - 1;
         
         if(debug) Debug.Log("boid spawned at " + boidPosition + "!");
     }
 
+    /*
     void DestroyBoid()
     {
         Destroy(boids.Pop());
         boidCount--;
     }
+    */
 
     public int GetBoidCount()
     {
