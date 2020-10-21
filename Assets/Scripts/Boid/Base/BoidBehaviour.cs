@@ -1,9 +1,5 @@
 ﻿using System.Collections;
-using System.Collections.Generic;
-using Unity.Entities.UniversalDelegates;
-using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 //[RequireComponent(typeof(BoidVision))]
 //[RequireComponent(typeof(BoidMovement))]
@@ -14,7 +10,7 @@ public abstract class BoidBehaviour : MonoBehaviour
     public BoidCollectiveController boidCollectiveController;
     public MouseTargetPosition mouseTargetObj; //ScriptableObject which holds mouse target position, if using mouse following
     protected Vector3 mouseTarget; //convenience var to hold mouse target position
-    protected BoidVision boidVision;
+    //protected BoidVision boidVision;
     protected BoidMovement boidMovement;
 
     [Header("Reaction to other boids")]
@@ -47,7 +43,7 @@ public abstract class BoidBehaviour : MonoBehaviour
 
     protected virtual void Start ()
     {
-        boidVision = GetComponent<BoidVision>();
+        //boidVision = GetComponent<BoidVision>();
         boidMovement = GetComponent<BoidMovement>();
 
         sqrBoidAvoidDistance = behaviourParams.boidAvoidDistance * behaviourParams.boidAvoidDistance;

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Diagnostics;
@@ -6,14 +7,14 @@ using UnityEngine;
 using Unity.Collections;
 
 //based on https://unionassets.com/blog/spatial-hashing-295
-public class SpatialHashDOTS : MonoBehaviour
+public class SpatialHashDOTS : SpatialHash
 {
     //class to store list of objects in each cell, plus extra cell info
     private struct BlittableBoidCell
     {
         //private NativeList<Vector3> positions;
         //private NativeList<Vector3> velocities;
-        private NativeList<PositionVelocity> posVels;
+        private NativeList<Boid_Blittable> boids;
         private const int INIT_SIZE = 1000;
 
         private const float emptyTimeout = 100f; //time in seconds to wait before deleting an empty cell. Resets if an object enters the cell
@@ -26,21 +27,21 @@ public class SpatialHashDOTS : MonoBehaviour
             //positions.Add(obj.transform.position);
             //velocities.Add(obj.GetVelocity());
 
-            posVels = new NativeList<PositionVelocity>(INIT_SIZE, Allocator.Persistent);
+            boids = new NativeList<Boid_Blittable>(INIT_SIZE, Allocator.Persistent);
             timeout = emptyTimeout;
 
-            posVels.Add(new PositionVelocity(obj.transform.position, obj.GetComponent<Rigidbody>().velocity));
+            boids.Add(new Boid_Blittable(obj.transform.position, obj.GetComponent<Rigidbody>().velocity));
         }
 
         public BlittableBoidCell(List<GameObject> objs)
         {
             //positions = new NativeList<Vector3>(Math.Max(INIT_SIZE, objs.Count), Allocator.Persistent);
             //velocities = new NativeList<Vector3>(Math.Max(INIT_SIZE, objs.Count), Allocator.Persistent);
-            posVels = new NativeList<PositionVelocity>(INIT_SIZE, Allocator.Persistent);
+            boids = new NativeList<Boid_Blittable>(INIT_SIZE, Allocator.Persistent);
             
             timeout = emptyTimeout;
 
-            for (int i = 0; i < objs.Count; i++) posVels.Add(GetObjPosVel(objs[i]));
+            for (int i = 0; i < objs.Count; i++) boids.Add(GetObjPosVel(objs[i]));
         }
 
         /*
@@ -55,27 +56,27 @@ public class SpatialHashDOTS : MonoBehaviour
         }
         */
 
-        public NativeList<PositionVelocity> GetObjsPosVels()
+        public NativeList<Boid_Blittable> GetBoids()
         {
-            return posVels;
+            return boids;
         }
 
         public void Add(GameObject obj)
         {
-            posVels.Add(GetObjPosVel(obj));
+            boids.Add(GetObjPosVel(obj));
         }
 
         public void Clear()
         {
             //positions.Clear();
             //velocities.Clear();
-            posVels.Clear();
+            boids.Clear();
         }
 
         //If this cell is empty, decrement its timeout counter; if not, reset its timeout
         public void UpdateTimeout(float timePassed)
         {
-            if (posVels.Length > 0 )
+            if (boids.Length > 0 )
             {
                 timeout = emptyTimeout;
             }
@@ -92,28 +93,25 @@ public class SpatialHashDOTS : MonoBehaviour
 
         public bool IsEmpty()
         {
-            return posVels.Length == 0;
+            return boids.Length == 0;
         }
 
 
         //utility
-        private PositionVelocity GetObjPosVel(GameObject obj)
+        private Boid_Blittable GetObjPosVel(GameObject obj)
         {
-            return new PositionVelocity(obj.transform.position, obj.GetComponent<Rigidbody>().velocity);
+            return new Boid_Blittable(obj.transform.position, obj.GetComponent<Rigidbody>().velocity);
         }
 
     }
 
-    public float cellSizeX, cellSizeY, cellSizeZ;
-    public int initNumCellsX, initNumCellsY, initNumCellsZ;
-
     public float updateInterval; //interval in seconds between hash updates. 0 = update every frame
-    private float updateTime; //update interval counter
 
     //false = add to cells by transform.position (faster, good for very small objects), true = add to cells by AABB (slower, more accurately represents large objects)
     public bool useAABB;
 
-    private Dictionary<Vector3Int, BlittableBoidCell> cells; //<key, bucket> dictionary representing each spatial cell's key and its contents
+    //private NativeHashMap<Vector3Int, BlittableBoidCell> cells; //<key, bucket> dictionary representing each spatial cell's key and its contents
+    private Dictionary<Vector3Int, BlittableBoidCell> cells;
 
     //objects to be put into cells by the spatial hash algorithm; each GameObject with a HashObject script (which points to the GameObject with this script) 
     //will add itself to includedObjs on Start() and remove itself on OnDestroy()
@@ -122,11 +120,10 @@ public class SpatialHashDOTS : MonoBehaviour
 
     void Awake()
     {
-        updateTime = updateInterval;
-
         includedObjs = new HashSet<GameObject>();
 
         //initialise dictionary with initial capacity = number of initial cells
+        //cells = new NativeHashMap<Vector3Int, BlittableBoidCell>(initNumCellsX * initNumCellsY * initNumCellsZ, Allocator.Persistent);
         cells = new Dictionary<Vector3Int, BlittableBoidCell>(initNumCellsX * initNumCellsY * initNumCellsZ);
 
         //add keys for initial cells and initialise corresponding empty buckets 
@@ -146,14 +143,18 @@ public class SpatialHashDOTS : MonoBehaviour
                 }
             }
         }
+
+        StartCoroutine(UpdateHashCoroutine());
     }
 
     void Update()
     {
+        /*
         //delete timed-out cells
         List<Vector3Int> cellsToRemove = new List<Vector3Int>();
 
-        foreach (KeyValuePair<Vector3Int, BlittableBoidCell> item in cells)
+        NativeKeyValueArrays<Vector3Int, BlittableBoidCell> cellsKV = cells.GetKeyValueArrays(Allocator.Temp);
+        for(int i = 0; i < cellsKV.Length; i++)
         {
             item.Value.UpdateTimeout(Time.deltaTime);
             if (item.Value.IsTimedOut()) cellsToRemove.Add(item.Key);
@@ -163,21 +164,15 @@ public class SpatialHashDOTS : MonoBehaviour
         {
             cells.Remove(key);
         }
+        */
+    }
 
-        //update cells at either set update interval or every frame
-        if (updateInterval > 0) //update interval set - update every updateInterval seconds
-        {
-            updateTime -= Time.deltaTime;
-
-            if (updateTime <= 0)
-            {
-                updateTime = updateInterval;
-                UpdateHash();
-            }
-        }
-        else //update interval not set - update every frame
+    private IEnumerator UpdateHashCoroutine()
+    {
+        while(true)
         {
             UpdateHash();
+            yield return new WaitForSecondsRealtime(updateInterval);
         }
     }
 
@@ -188,7 +183,7 @@ public class SpatialHashDOTS : MonoBehaviour
         ClearCells();
 
         //watch.Stop();
-        //UnityEngine.Debug.Log("time to clear buckets: " + watch.ElapsedTicks + " ticks");
+        //UnityEngine.Debug.Log("time to clear cells: " + watch.ElapsedTicks + " ticks");
 
         if (!useAABB)
         {
@@ -204,9 +199,6 @@ public class SpatialHashDOTS : MonoBehaviour
                 //AddByAABB
             }
         }
-
-
-
     }
 
     //inserts a GameObject into the correct bucket by its transform.position only (i.e. not taking into account its size, won't be added to more than one bucket);
@@ -240,51 +232,51 @@ public class SpatialHashDOTS : MonoBehaviour
 
     //Tries to get the list of boid positions/velocities at the given key.
     //sets posVels to the found pos/vel list and returns true if a cell exists at that key; sets it to an empty list and returns false otherwise.
-    public bool TryGet(Vector3Int key, out NativeList<PositionVelocity> posVels)
+    public bool TryGet(Vector3Int key, out NativeList<Boid_Blittable> posVels)
     {
         if(cells.TryGetValue(key, out BlittableBoidCell cell))
         {
-            posVels = cell.GetObjsPosVels();
+            posVels = cell.GetBoids();
             return true;
         }
         else
         {
-            posVels = new NativeList<PositionVelocity>(0, Allocator.None);
+            posVels = new NativeList<Boid_Blittable>(0, Allocator.Temp);
             return false;
         }
     }
 
     //Tries to get the list of boid positions/velocities at the given position's key.
     //sets posVels to the found pos/vel list and returns true if a cell exists at that key; sets it to an empty list and returns false otherwise.
-    public bool TryGet(Vector3 pos, out NativeList<PositionVelocity> posVels)
+    public bool TryGet(Vector3 pos, out NativeList<Boid_Blittable> posVels)
     {
         return TryGet(Key(pos), out posVels);
     }
 
     //Tries to get the list of boid positions/velocities at the given key without returning true/false on success/failure.
     //Returns the cell's boid pos/vel list if found, or an empty list if there is no cell at the given key
-    public NativeList<PositionVelocity> Get(Vector3Int key)
+    public NativeList<Boid_Blittable> Get(Vector3Int key)
     {
-        return cells.ContainsKey(key) ? cells[key].GetObjsPosVels() : new NativeList<PositionVelocity>(0, Allocator.None);
+        return cells.ContainsKey(key) ? cells[key].GetBoids() : new NativeList<Boid_Blittable>(0, Allocator.Temp);
     }
 
     //Tries to get the list of boid positions/velocities at the given position's key without returning true/false on success/failure.
     //Returns the cell's boid pos/vel list if found, or an empty list if there is no cell at the given position's key
-    public NativeList<PositionVelocity> Get(Vector3 pos)
+    public NativeList<Boid_Blittable> Get(Vector3 pos)
     {
         return Get(Key(pos));
     }
 
     //returns a list of GameObjects <= r distance from pos. Does NOT remove duplicates (big objects added to more than one bucket by AddByAABB) 
     // - this is faster, but may produce bad results if you care about duplicates (e.g. if you are counting the number of objects within r distance)
-    public NativeList<PositionVelocity> GetByRadius(Vector3 pos, float r)
+    public NativeList<Boid_Blittable> GetByRadius(Vector3 pos, float r)
     {
-        NativeList<PositionVelocity> objsInRange = new NativeList<PositionVelocity>(100, Allocator.Temp);
+        NativeList<Boid_Blittable> objsInRange = new NativeList<Boid_Blittable>(100, Allocator.Temp);
 
         Vector3Int posKey = Key(pos); //key of cell containing pos - used for checking later
 
         //objects which may be within search radius (from cells that are in search radius - will always check at least the cell containing pos)
-        NativeList<PositionVelocity> objsToCheck = Get(pos);
+        NativeList<Boid_Blittable> objsToCheck = Get(pos);
 
         /* add other cells within radius, if any, to cellsToCheck */
         //left/right/up/down/back/forward
@@ -310,9 +302,9 @@ public class SpatialHashDOTS : MonoBehaviour
 
         /* check distance on objects within cellsToCheck */
         float rSqr = r * r; //check sqr magnitude to avoid sqrt calls
-        foreach (PositionVelocity posVel in objsToCheck)
+        foreach (Boid_Blittable posVel in objsToCheck)
         {
-            if (Vector3.SqrMagnitude(pos - posVel.Position) <= rSqr) objsInRange.Add(posVel);
+            if (Vector3.SqrMagnitude(pos - (Vector3)posVel.position) <= rSqr) objsInRange.Add(posVel);
         }
 
         return objsInRange;
@@ -328,15 +320,61 @@ public class SpatialHashDOTS : MonoBehaviour
     }
     */
 
+    /*
     //returns a list of keys in the spatial hash. This is not the cells' positions in world space, just their spatial keys
     //e.g (0, 0, 0), (0, 0, 1), (1, 0, 0) etc.
-    public List<Vector3Int> GetCellKeys()
+    public NativeArray<Vector3Int> GetCellKeys()
+    {
+        return cells.GetKeyArray(Allocator.Temp);
+    }
+
+    //returns a list of cells containing objects. This is not the cells' positions in world space, just their spatial keys, e.g (0, 0, 0), (0, 0, 1), (1, 0, 0) etc.
+    public List<Vector3Int> GetNonEmptyCellKeys()
+    {
+        List<Vector3Int> nonEmptyCells = new List<Vector3Int>();
+
+        var cellsKV = cells.GetKeyValueArrays(Allocator.Temp);
+        for(int i = 0; i < cellsKV.Length; i++)
+        {
+            if (!cellsKV.Values[i].IsEmpty()) nonEmptyCells.Add(cellsKV.Keys[i]);
+        }
+
+        return nonEmptyCells;
+    }
+
+    //returns a list of cells not containing objects
+    public List<Vector3Int> GetEmptyCellKeys()
+    {
+        List<Vector3Int> emptyCells = new List<Vector3Int>();
+
+        var cellsKV = cells.GetKeyValueArrays(Allocator.Temp);
+        for (int i = 0; i < cellsKV.Length; i++)
+        {
+            if (cellsKV.Values[i].IsEmpty()) emptyCells.Add(cellsKV.Keys[i]);
+        }
+
+        return emptyCells;
+    }
+
+    //Clears each cell. Does not delete the cells themselves
+    public void ClearCells()
+    {
+        foreach(Vector3Int key in cells.GetKeyArray(Allocator.Temp))
+        {
+            cells[key].Clear();
+        }
+    }
+    */
+
+    //returns a list of cells in the spatial hash, i.e. returns the keys. This is NOT the cells' positions in space, just their spatial keys
+    //e.g (0, 0, 0), (0, 0, 1), (1, 0, 0) etc.
+    public List<Vector3Int> GetCells()
     {
         return cells.Keys.ToList();
     }
 
-    //returns a list of cells containing objects. This is not the cells' positions in world space, just their spatial keys, e.g (0, 0, 0), (0, 0, 1), (1, 0, 0) etc.
-    public List<Vector3Int> GetNonEmptyCells()
+    //returns a list of cells containing objects. This is NOT the cells' positions in space, just their spatial keys, e.g (0, 0, 0), (0, 0, 1), (1, 0, 0) etc.
+    public List<Vector3Int> GetNonEmptyCellKeys()
     {
         List<Vector3Int> nonEmptyCells = new List<Vector3Int>();
 
@@ -349,7 +387,7 @@ public class SpatialHashDOTS : MonoBehaviour
     }
 
     //returns a list of cells not containing objects
-    public List<Vector3Int> GetEmptyCells()
+    public List<Vector3Int> GetEmptyCellKeys()
     {
         List<Vector3Int> emptyCells = new List<Vector3Int>();
 
@@ -361,20 +399,8 @@ public class SpatialHashDOTS : MonoBehaviour
         return emptyCells;
     }
 
-    //returns a list of the world positions of cells in the spatial hash containing objects
-    public List<Vector3Int> GetNonEmptyCellKeys()
-    {
-        List<Vector3Int> keys = new List<Vector3Int>();
 
-        foreach (KeyValuePair<Vector3Int, BlittableBoidCell> item in cells)
-        {
-            if (!item.Value.IsEmpty()) keys.Add(item.Key);
-        }
-
-        return keys;
-    }
-
-    //Clears each cell. Does not delete the cells themselves
+    //Clears each cell in the cells dictionary. Does not delete the cells themselves
     public void ClearCells()
     {
         foreach (KeyValuePair<Vector3Int, BlittableBoidCell> cell in cells)
@@ -384,7 +410,7 @@ public class SpatialHashDOTS : MonoBehaviour
     }
 
     //Adds an object to list of objects to hash
-    public void Include(GameObject obj)
+    public override void Include(GameObject obj)
     {
         includedObjs.Add(obj);
     }
@@ -393,7 +419,7 @@ public class SpatialHashDOTS : MonoBehaviour
     //N.B. objects with the HashObject script call this function when they are destroyed. It is necessary to 
     //remove the destroyed object from the hash immediately, even though it would be removed anyway on the next hash update,
     //because other scripts could try to get the now-destroyed object from the hash before it is updated
-    public void Remove(GameObject obj)
+    public override void Remove(GameObject obj)
     {
         includedObjs.Remove(obj);
         Vector3Int key = Key(obj.transform.position);
@@ -422,7 +448,7 @@ public class SpatialHashDOTS : MonoBehaviour
     }
 
     /*----DEBUG/VISUALISATION FUNCTIONS - PASS DEBUG DATA TO SpatialHashDebug.cs ----*/
-    public int DEBUG_GetIncludedObjsCount()
+    public override int GetIncludedObjsCount()
     {
         return includedObjs.Count();
     }

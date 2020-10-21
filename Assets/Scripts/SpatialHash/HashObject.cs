@@ -6,16 +6,13 @@ using UnityEngine;
 //Adds this object to the attached SpatialHash on Start; removes it on destroy
 public class HashObject : MonoBehaviour
 {
-    public string hashName; //name of spatial hash object to find
-    private SpatialHash hash; //hash in which to store this object
+    public SpatialHash hash; //hash in which to store this object
 
     void Start()
     {
-        hash = GameObject.Find(hashName).GetComponent<SpatialHash>();
-
         if (hash == null)
         {
-            Debug.LogError("HashObject cannot find SpatialHash by name " + hashName + "!");
+            Debug.LogError("Trying to add this object to a null SpatialHash!");
         }
         else
         {

@@ -4,7 +4,7 @@ using System.Diagnostics;
 using UnityEngine;
 
 //based on https://unionassets.com/blog/spatial-hashing-295
-public class SpatialHash : MonoBehaviour
+public class SpatialHash_Singlethreaded : SpatialHash
 {
     //class to store list of objects in each cell, plus extra cell info
     private class Cell
@@ -69,11 +69,6 @@ public class SpatialHash : MonoBehaviour
         }
 
     }
-
-    //public float maxWidth, maxHeight;
-
-    public float cellSizeX, cellSizeY, cellSizeZ;
-    public int initNumCellsX, initNumCellsY, initNumCellsZ;
 
     public float updateInterval; //interval in seconds between hash updates. 0 = update every frame
     private float updateTime; //update interval counter
@@ -329,7 +324,7 @@ public class SpatialHash : MonoBehaviour
     }
 
     //returns a list of cells containing objects. This is NOT the cells' positions in space, just their spatial keys, e.g (0, 0, 0), (0, 0, 1), (1, 0, 0) etc.
-    public List<Vector3Int> GetNonEmptyCells()
+    public List<Vector3Int> GetNonEmptyCellKeys()
     {
         List<Vector3Int> nonEmptyCells = new List<Vector3Int>();
 
@@ -342,7 +337,7 @@ public class SpatialHash : MonoBehaviour
     }
 
     //returns a list of cells not containing objects
-    public List<Vector3Int> GetEmptyCells()
+    public List<Vector3Int> GetEmptyCellKeys()
     {
         List<Vector3Int> emptyCells = new List<Vector3Int>();
 
@@ -365,7 +360,7 @@ public class SpatialHash : MonoBehaviour
     }
 
     //Adds an object to list of objects to hash
-    public void Include(GameObject obj)
+    public override void Include(GameObject obj)
     {
         includedObjs.Add(obj);
     }
@@ -374,7 +369,7 @@ public class SpatialHash : MonoBehaviour
     //N.B. objects with the HashObject script call this function when they are destroyed. It is necessary to 
     //remove the destroyed object from the hash immediately, even though it would be removed anyway on the next hash update,
     //because other scripts could try to get the now-destroyed object from the hash before it is updated
-    public void Remove(GameObject obj)
+    public override void Remove(GameObject obj)
     {
         includedObjs.Remove(obj);
         Vector3Int key = Key(obj.transform.position);
@@ -402,7 +397,7 @@ public class SpatialHash : MonoBehaviour
     }
 
     /*----DEBUG/VISUALISATION FUNCTIONS - PASS DEBUG DATA TO SpatialHashDebug.cs ----*/
-    public int DEBUG_GetIncludedObjsCount()
+    public override int GetIncludedObjsCount()
     {
         return includedObjs.Count();
     }

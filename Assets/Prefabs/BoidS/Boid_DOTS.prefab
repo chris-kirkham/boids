@@ -12,11 +12,11 @@ GameObject:
   - component: {fileID: 7915023905118678239}
   - component: {fileID: 7923188474796853487}
   - component: {fileID: 7899564145633988363}
-  - component: {fileID: 7827098214039631492}
+  - component: {fileID: -8001907138528344430}
   - component: {fileID: 5879448467393069781}
   - component: {fileID: 4876609373067108080}
   m_Layer: 9
-  m_Name: BoidDOTS
+  m_Name: Boid_DOTS
   m_TagString: Boid
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -100,7 +100,7 @@ MonoBehaviour:
   behaviourParams: {fileID: 11400000, guid: 0b8a813a78a8ada4a807e74ea033b89d, type: 2}
   boidCollectiveController: {fileID: 0}
   mouseTargetObj: {fileID: 11400000, guid: ae7943ed48c50944dad07c6463595d84, type: 2}
---- !u!114 &7827098214039631492
+--- !u!114 &-8001907138528344430
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -109,16 +109,14 @@ MonoBehaviour:
   m_GameObject: {fileID: 7901281633491251323}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c6138e1573fda944080494296b330151, type: 3}
+  m_Script: {fileID: 11500000, guid: 9f8726ccac1e9474ea6b3de8e827b4aa, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  hashName: BoidSpatialHash
-  overlapSphereRadius: 5
+  hash: {fileID: 0}
+  overlapSphereRadius: 10
   useAdaptiveOverlapSphere: 0
-  minAdaptiveOverlapRadius: 1
-  maxAdaptiveOverlapRadius: 50
-  maxSeenBoidsToStore: 5
-  useFastHashCheck: 0
+  minAdaptiveOverlapRadius: 0
+  maxAdaptiveOverlapRadius: 0
 --- !u!114 &5879448467393069781
 MonoBehaviour:
   m_ObjectHideFlags: 0

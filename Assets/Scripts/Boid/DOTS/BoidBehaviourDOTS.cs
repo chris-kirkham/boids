@@ -5,59 +5,66 @@ using Unity.Jobs;
 using Unity.Burst;
 using Unity.Mathematics;
 using UnityEngine;
+using System.Diagnostics;
 
 public class BoidBehaviourDOTS : BoidBehaviour
 {
+    //private BoidVisionDOTS boidVision;
+    private BoidVision_Singlethreaded boidVision;
+
     //Job variables (initialised in InitBoidBehaviourJob())
-    private JobHandle jobHandle;
-    public NativeList<float3> seenBoidPositions;
-    public NativeList<float3> seenBoidVelocities;
+    private JobHandle boidBehaviourJobHandle;
+    public NativeList<Boid_Blittable> seenBoids;
     private int JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH = 100;
     public NativeArray<float3> resultDir;
 
     // Use this for initialization
-    protected override void Start()
+    protected override void Start() 
     {
+        //boidVision = GetComponent<BoidVisionDOTS>();
+        boidVision = GetComponent<BoidVision_Singlethreaded>();
         InitBoidBehaviourJob();
         base.Start();
     }
 
     protected override void UpdateBoid()
     {
-        if (jobHandle.IsCompleted)
+        if (boidBehaviourJobHandle.IsCompleted)
         {
-            jobHandle.Complete();
+            Stopwatch stopwatch = Stopwatch.StartNew();
 
             //Update seen boids lists
-            seenBoidPositions.Clear();
-            seenBoidVelocities.Clear();
             boidVision.UpdateSeenBoids();
-            foreach (GameObject boid in boidVision.SeenBoids)
+
+            //seenBoids = boidVision.GetSeenBoids();
+            seenBoids.Clear();
+            foreach(GameObject boid in boidVision.SeenBoids)
             {
-                seenBoidPositions.Add(boid.transform.position);
-                seenBoidVelocities.Add(boidMovement.GetVelocity());
+                seenBoids.Add(new Boid_Blittable(boid.transform.position, boid.GetComponent<BoidMovement>().GetVelocity()));
             }
+
 
             //Initialise and run job
             BoidBehaviourJob job = new BoidBehaviourJob()
             {
                 pos = transform.position,
-                seenBoidPositions = this.seenBoidPositions,
-                seenBoidVelocities = this.seenBoidVelocities,
+                seenBoids = this.seenBoids,
                 boidAvoidSpeed = behaviourParams.boidAvoidSpeed,
                 sqrBoidAvoidDistance = this.sqrBoidAvoidDistance,
                 useMouseFollow = ControlInputs.Instance.useMouseFollow,
                 mouseTarget = this.mouseTarget,
                 mouseFollowSpeed = behaviourParams.cursorFollowSpeed,
-                useBoundingCoordinates = ControlInputs.Instance.useBoundingCoordinates,
+                useBoundingCoordinates = behaviourParams.useBoundingCoordinates,
                 positiveBounds = this.positiveBounds,
                 negativeBounds = this.negativeBounds,
                 boundsAvoidSpeed = behaviourParams.boundsReturnSpeed,
                 idleNoiseFrequency = behaviourParams.idleNoiseFrequency,
                 offset = behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0,
+                idleSpeed = behaviourParams.idleSpeed,
                 resultDir = this.resultDir
             };
-            jobHandle = job.Schedule();
+
+            boidBehaviourJobHandle = job.Schedule();
         }
     }
 
@@ -71,11 +78,15 @@ public class BoidBehaviourDOTS : BoidBehaviour
         if (ControlInputs.Instance.useMouseFollow) mouseTarget = mouseTargetObj.mouseTargetPosition;
     }
 
+    private void LateUpdate()
+    {
+        boidBehaviourJobHandle.Complete();
+    }
+
     private void OnDestroy()
     {
-        jobHandle.Complete(); //need to complete the job in order to deallocate the native containers safely
-        seenBoidPositions.Dispose();
-        seenBoidVelocities.Dispose();
+        boidBehaviourJobHandle.Complete(); //need to complete the job in order to deallocate the native containers safely
+        seenBoids.Dispose();
         resultDir.Dispose();
     }
 
@@ -86,8 +97,7 @@ public class BoidBehaviourDOTS : BoidBehaviour
         public float3 pos;
 
         //other boid info
-        [ReadOnly] public NativeList<float3> seenBoidPositions;
-        [ReadOnly] public NativeList<float3> seenBoidVelocities;
+        [ReadOnly] public NativeList<Boid_Blittable> seenBoids;
         public float boidAvoidSpeed;
         public float sqrBoidAvoidDistance;
 
@@ -104,6 +114,7 @@ public class BoidBehaviourDOTS : BoidBehaviour
         //idle movement
         public float idleNoiseFrequency;
         public float offset;
+        public float idleSpeed;
 
         //result direction vector (only one vector)
         public NativeArray<float3> resultDir;
@@ -111,14 +122,22 @@ public class BoidBehaviourDOTS : BoidBehaviour
         public void Execute()
         {
             //resultDir[0] = ReactToOtherBoids() + FollowCursor() + ReturnToBounds() + ObstacleRepulsion();
-            resultDir[0] = ReactToOtherBoids() + FollowCursor() + ReturnToBounds() + MoveIdle();
+            float3 flocking = ReactToOtherBoids();
+            if(Vector3.SqrMagnitude(flocking) <= 0.1f && !useMouseFollow)
+            {
+                resultDir[0] = ReturnToBounds() + MoveIdle();
+            }
+            else
+            {
+                resultDir[0] = flocking + FollowCursor() + ReturnToBounds() + MoveIdle();
+            }
         }
 
         //returns the boid's velocity vector after reacting to other boids in the environment (avoiding other boids, moving to centre of other boids,
         //matching velocity with other boids
         float3 ReactToOtherBoids()
         {
-            float numSeenBoids = seenBoidPositions.Length;
+            float numSeenBoids = seenBoids.Length;
             if (numSeenBoids == 0) return float3.zero;
 
             float3 boidAvoidDir = float3.zero;
@@ -128,13 +147,13 @@ public class BoidBehaviourDOTS : BoidBehaviour
             for (int i = 0; i < numSeenBoids; i++)
             {
                 //avoid other boids
-                if (Vector3.SqrMagnitude(pos - seenBoidPositions[i]) < sqrBoidAvoidDistance)
+                if (Vector3.SqrMagnitude(pos - seenBoids[i].position) < sqrBoidAvoidDistance)
                 {
-                    boidAvoidDir += pos - seenBoidPositions[i];
+                    boidAvoidDir += pos - seenBoids[i].position;
                 }
 
-                centre += seenBoidPositions[i] - pos; //move towards centre of nearby boids
-                velocityMatch += seenBoidVelocities[i]; //match velocity with nearby boids
+                centre += seenBoids[i].position - pos; //move towards centre of nearby boids
+                velocityMatch += seenBoids[i].velocity; //match velocity with nearby boids
             }
 
             centre /= numSeenBoids;
@@ -190,7 +209,16 @@ public class BoidBehaviourDOTS : BoidBehaviour
 
         float3 MoveIdle()
         {
-            return DirectionalPerlin.Directional3D(pos, idleNoiseFrequency, offset);
+            return DirectionalPerlin.Directional3D(pos, idleNoiseFrequency, offset) * idleSpeed;
+        }
+    }
+
+    [BurstCompile]
+    private struct ObstacleAvoidanceJob : IJob
+    {
+        public void Execute()
+        {
+
         }
     }
 
@@ -212,8 +240,7 @@ public class BoidBehaviourDOTS : BoidBehaviour
 
     private void InitBoidBehaviourJob()
     {
-        seenBoidPositions = new NativeList<float3>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
-        seenBoidVelocities = new NativeList<float3>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
+        seenBoids = new NativeList<Boid_Blittable>(JOB_MAX_SEEN_BOIDS_ARRAYS_LENGTH, Allocator.Persistent);
         resultDir = new NativeArray<float3>(1, Allocator.Persistent);
     }
 }

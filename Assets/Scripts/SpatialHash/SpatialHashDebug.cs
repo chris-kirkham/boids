@@ -27,15 +27,16 @@ public class SpatialHashDebug : MonoBehaviour
 
     }
 
+    /*
     void OnRenderObject()
     {
-        if (logNumObjsInHash) Debug.Log(hash.DEBUG_GetIncludedObjsCount());
+        if (logNumObjsInHash) Debug.Log(hash.GetIncludedObjsCount());
 
         //if (drawCellOutlines && highlightActiveCells) //draw empty cells in blue, draw non-empty cells in cyan
         if (ControlInputs.Instance.drawCellOutlines && ControlInputs.Instance.highlightActiveCells)
         {
-            foreach (Vector3Int cell in hash.GetEmptyCells()) DrawWireCube(GetCellVertices(cell), Color.blue);
-            foreach (Vector3Int cell in hash.GetNonEmptyCells()) DrawWireCube(GetCellVertices(cell), Color.cyan);
+            foreach (Vector3Int cell in hash.GetEmptyCellKeys()) DrawWireCube(GetCellVertices(cell), Color.blue);
+            foreach (Vector3Int cell in hash.GetNonEmptyCellKeys()) DrawWireCube(GetCellVertices(cell), Color.cyan);
         }
         //else if (drawCellOutlines) //draw all cells (empty or non-empty) in blue
         else if (ControlInputs.Instance.drawCellOutlines)
@@ -45,9 +46,10 @@ public class SpatialHashDebug : MonoBehaviour
         //else if (highlightActiveCells) //draw non-empty cells in cyan
         else if (ControlInputs.Instance.highlightActiveCells)
         {
-            foreach (Vector3Int cell in hash.GetNonEmptyCells()) DrawWireCube(GetCellVertices(cell), Color.cyan);
+            foreach (Vector3Int cell in hash.GetNonEmptyCellKeys()) DrawWireCube(GetCellVertices(cell), Color.cyan);
         }
     }
+    */
 
     //draws wire cube using GL
     void DrawWireCube(List<Vector3> verts, Color colour)

@@ -7,6 +7,14 @@ using UnityEngine.EventSystems;
 
 public class BoidBehaviour_Singlethreaded : BoidBehaviour
 {
+    private BoidVision_Singlethreaded boidVision;
+
+    protected override void Start()
+    {
+        boidVision = GetComponent<BoidVision_Singlethreaded>();
+        base.Start();
+    }
+
     protected override void UpdateBoid()
     {
         boidVision.UpdateSeenBoids();
@@ -202,6 +210,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             {
                 Debug.DrawRay(transform.position, closestVector, Color.green);
                 return closestVector * behaviourParams.obstacleAvoidSpeed;
+                //return closestVector.normalized * behaviourParams.obstacleAvoidSpeed;
             }
         }
 
