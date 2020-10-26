@@ -1,10 +1,11 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  error: 1 plat 4 at (0): Program 'CSMain', warning X4714: sum of temp registers and indexable temp registers times 256 threads exceeds the recommended total 16384.  Performance may be reduced
-  api=4 insize=2670 outsize=10760 ok=1
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=3956 outsize=1068 ok=1
 Cmd: compileComputeKernel
-  error: 1 plat 4 at (0): Program 'CSMain', warning X4714: sum of temp registers and indexable temp registers times 256 threads exceeds the recommended total 16384.  Performance may be reduced
-  api=4 insize=2852 outsize=11384 ok=1
-
-Quitting shader compiler process
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=3944 outsize=1027 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=4422 outsize=2504 ok=1

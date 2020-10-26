@@ -1,7 +1,8 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  error: 2 plat 4 at BehaviourCompute.compute(88): undeclared identifier 'Perlin'
-  api=4 insize=2681 outsize=0 ok=0
-
-Quitting shader compiler process
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=3894 outsize=1926 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=3914 outsize=2416 ok=1

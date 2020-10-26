@@ -1,4 +1,7 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  api=4 insize=2731 outsize=1775 ok=1
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  error: 2 plat 4 at BehaviourCompute.compute(105): 'arrival': no matching 0 parameter function
+  error: 2 plat 4 at BehaviourCompute.compute(105): syntax error: unexpected token 'f'
+  api=4 insize=3895 outsize=0 ok=0

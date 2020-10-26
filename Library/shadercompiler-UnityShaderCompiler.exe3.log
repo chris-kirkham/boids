@@ -1,4 +1,13 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  api=4 insize=2885 outsize=2150 ok=1
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  error: 2 plat 4 at BehaviourCompute.compute(87): 'avoid': no matching 0 parameter function
+  error: 2 plat 4 at BehaviourCompute.compute(87): syntax error: unexpected token ';'
+  api=4 insize=4122 outsize=0 ok=0
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=3936 outsize=1016 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=4086 outsize=2376 ok=1

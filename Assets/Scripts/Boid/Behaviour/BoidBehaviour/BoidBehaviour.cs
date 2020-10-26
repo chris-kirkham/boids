@@ -52,7 +52,7 @@ public abstract class BoidBehaviour : MonoBehaviour
         boidVision = GetComponent<BoidVision>();
         boidMovement = GetComponent<BoidMovement>();
 
-        sqrBoidAvoidDistance = behaviourParams.boidAvoidDistance * behaviourParams.boidAvoidDistance;
+        sqrBoidAvoidDistance = behaviourParams.neighbourDistance * behaviourParams.neighbourDistance;
         
         float halfBoundsSize = behaviourParams.boundsSize / 2;
         positiveBounds = new Vector3(halfBoundsSize, halfBoundsSize, halfBoundsSize);
@@ -77,7 +77,7 @@ public abstract class BoidBehaviour : MonoBehaviour
 
     protected virtual void OnValidate()
     {
-        sqrBoidAvoidDistance = behaviourParams.boidAvoidDistance * behaviourParams.boidAvoidDistance;
+        sqrBoidAvoidDistance = behaviourParams.neighbourDistance * behaviourParams.neighbourDistance;
     }
 
     //Called in UpdateBoidCoroutine; put boid update code here

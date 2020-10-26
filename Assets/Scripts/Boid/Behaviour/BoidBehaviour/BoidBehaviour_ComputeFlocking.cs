@@ -12,8 +12,8 @@ public class BoidBehaviour_ComputeFlocking : BoidBehaviour
 
     protected override void UpdateBoid()
     {
-        //moveDirection = computeScript.GetVelocityFromComputeData(BoidID) + ObstacleRepulsion() + AvoidObstacles();
-        moveDirection = CalcRules();
+        //moveDirection = computeScript.GetVelocityFromComputeData(BoidID);
+        //moveDirection = CalcRules();
     }
 
     void FixedUpdate()
@@ -178,7 +178,6 @@ public class BoidBehaviour_ComputeFlocking : BoidBehaviour
         return boundsAvoidVector;
     }
 
-
     Vector3 FollowCursor()
     {
         return (behaviourParams.useCursorFollow) ? (mouseTarget - transform.position).normalized * behaviourParams.cursorFollowSpeed : Vector3.zero;
@@ -187,7 +186,7 @@ public class BoidBehaviour_ComputeFlocking : BoidBehaviour
     Vector3 MoveIdle()
     {
         Vector3 idleDir = DirectionalPerlin.Directional3D(transform.position, behaviourParams.idleNoiseFrequency, behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0f);
-        Debug.DrawRay(transform.position, idleDir, Color.magenta, 0.1f);
+        //Debug.DrawRay(transform.position, idleDir, Color.magenta, 0.1f);
         return DirectionalPerlin.Directional3D(transform.position, behaviourParams.idleNoiseFrequency, behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0);
     }
 

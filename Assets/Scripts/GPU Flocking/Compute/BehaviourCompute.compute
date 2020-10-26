@@ -1,0 +1,131 @@
+﻿// Each #kernel tells which function to compile; you can have many kernels
+#pragma kernel CSMain
+
+#define GROUP_SIZE 64
+#define BOID_VISION_CONE_MIN_DOT -0.5f
+
+#include "../cgincs/bccNoise4.cginc"
+#include "../cgincs/boidSteering.cginc"
+
+/* Boids */
+struct Boid
+{
+    float3 position, velocity;
+};
+
+//boid constructor
+Boid ConstructBoid(float3 position, float3 velocity)
+{
+    Boid boid;
+    boid.position = position;
+    boid.velocity = velocity;
+
+    return boid;
+}
+
+/* Flock buffer */
+RWStructuredBuffer<Boid> boids;
+uint numBoids;
+
+/* Flock behaviour params, same for each boid */
+//other boid reactions
+float neighbourDist;
+float avoidDist;
+float avoidSpeed;
+
+//cursor following
+bool usingCursorFollow;
+float cursorFollowSpeed;
+float3 cursorPos;
+
+//movement bounds
+bool usingBounds;
+float boundsSize;
+float3 boundsCentre;
+float boundsReturnSpeed;
+
+//idle movement
+bool usingIdleMvmt;
+Texture2D idleNoiseTex;
+float idleNoiseFrequency;
+float idleOffset;
+float idleMoveSpeed;
+
+/* Boid movement params */
+float moveSpeed;
+float deltaTime;
+
+float3 ReactToOtherBoids(uint id)
+{
+    Boid boid = boids[id];
+    float3 pos = boid.position;
+    float3 vel = boid.velocity;
+
+    float3 avoidDir = float3(0, 0, 0);
+    float3 centre = float3(0, 0, 0);
+    float3 velocityMatch = float3(0, 0, 0);
+
+    uint neighbourCount = 0;
+    for (uint i = 0; i < numBoids; i++)
+    {
+        if (i != id)
+        {
+            Boid otherBoid = boids[i];
+            float dist = distance(pos, otherBoid.position);
+
+            //if (dist < neighbourDist && length(vel) > 0 && length(otherBoid.velocity) > 0 && dot(normalize(vel), normalize(otherBoid.velocity)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
+            if (dist < neighbourDist)
+            {
+                neighbourCount++;
+                /*
+                if(dist < avoidDist) avoidDir += (pos - otherBoid.position) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance
+                centre += otherBoid.position - pos;
+                velocityMatch += otherBoid.velocity;
+                */
+
+                if (dist < avoidDist) avoidDir += avoid(pos, vel, otherBoid.position, avoidSpeed); //scale avoid speed by distance
+                centre += otherBoid.position - pos;
+                velocityMatch += otherBoid.velocity;
+            }
+        }
+    }
+
+    float avg = 1.0f / (float)(neighbourCount + (int)(neighbourCount == 0)); //if neighbourCount == 0, add 1 to avoid a divide-by-zero
+    centre *= avg;
+    velocityMatch *= avg;
+
+    //return (normalize(avoidDir) * avoidSpeed) + normalize(centre) + velocityMatch;
+    //return (avoidDir * avoidSpeed) + centre + velocityMatch;
+    return avoidDir + centre + velocityMatch;
+}
+
+
+float3 MoveIdle(uint id)
+{
+    return Bcc4NoiseBaseDirectional3D((boids[id].position + idleOffset) * idleNoiseFrequency) * idleMoveSpeed * (int)usingIdleMvmt;
+}
+
+
+float3 FollowCursor(uint id)
+{
+    //return normalize(cursorPos - boids[id].position) * moveSpeed * (int)usingCursorFollow;
+    return arrival(boids[id].position, boids[id].velocity, cursorPos, moveSpeed, 0.01, deltaTime) * (int)usingCursorFollow;
+}
+
+float3 ReturnToBounds(uint id)
+{
+    float3 position = boids[id].position;
+    return normalize(boundsCentre - position) * boundsReturnSpeed * (int)(distance(boundsCentre, position) > boundsSize) * (int)usingBounds;
+}
+
+//returns boid buffer with new positions and velocities
+[numthreads(GROUP_SIZE, 1, 1)]
+void CSMain(uint3 id : SV_DispatchThreadID)
+{
+    uint idX = id.x;
+    //float3 newVel = ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX) + ReturnToBounds(idX);
+    //float3 newPos = boids[idX].position + (newVel * moveSpeed * deltaTime);
+    float3 newVel = (ReactToOtherBoids(idX) + FollowCursor(idX)) * deltaTime;
+    float3 newPos = boids[idX].position + boids[idX].velocity + newVel;
+    boids[idX] = ConstructBoid(newPos, newVel);
+}

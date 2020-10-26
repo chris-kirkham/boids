@@ -5,9 +5,13 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Scriptable Objects/Boid Behaviour Params")]
 public class BoidBehaviourParams : ScriptableObject
 {
+    [Header("Move speed parameters")]
+    public float moveSpeed = 5f;
+
     [Header("Reaction to other boids")]
-    public float boidAvoidDistance = 1f;
-    public float boidAvoidSpeed = 1f;
+    public float neighbourDistance = 10f;
+    public float avoidDistance = 1f;
+    public float avoidSpeed = 1f;
     public int numClosestToCheck = 5;
 
     [Header("Cursor/goal following")]
@@ -18,6 +22,7 @@ public class BoidBehaviourParams : ScriptableObject
 
     [Header("Bounding coordinates")]
     public bool useBoundingCoordinates = true;
+    public Vector3 boundsCentre = Vector3.zero;
     public float boundsSize; //size of cube representing boid bounding area (centre is at (0, 0, 0))
     public float boundsReturnSpeed = 1f;
 

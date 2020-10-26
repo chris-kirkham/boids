@@ -44,7 +44,7 @@ public class BoidBehaviourDOTS : BoidBehaviour
                 pos = transform.position,
                 seenBoidPositions = this.seenBoidPositions,
                 seenBoidVelocities = this.seenBoidVelocities,
-                boidAvoidSpeed = behaviourParams.boidAvoidSpeed,
+                boidAvoidSpeed = behaviourParams.avoidSpeed,
                 sqrBoidAvoidDistance = this.sqrBoidAvoidDistance,
                 useMouseFollow = ControlInputs.Instance.useMouseFollow,
                 mouseTarget = this.mouseTarget,

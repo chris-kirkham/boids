@@ -101,7 +101,7 @@ public class BoidBehaviour_Singlethreaded : BoidBehaviour
             velocityMatch = velocityMatch / boidVision.SeenBoids.Count;
         }
 
-        return (boidAvoidVector * behaviourParams.boidAvoidSpeed) + centre + velocityMatch;
+        return (boidAvoidVector * behaviourParams.avoidSpeed) + centre + velocityMatch;
     }
 
     Vector3 Disperse(List<GameObject> seenBoids)
