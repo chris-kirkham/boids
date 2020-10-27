@@ -12,12 +12,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 704c2dc85af21b1459d0181de1de7008, type: 3}
   m_Name: BoidBehaviourParams
   m_EditorClassIdentifier: 
-  moveSpeed: 1
-  neighbourDistance: 5
+  moveSpeed: 25
+  mass: 1
+  friction: 0
+  neighbourDistance: 10
   avoidDistance: 5
-  avoidSpeed: 4
+  avoidSpeed: 5
   numClosestToCheck: 5
-  useCursorFollow: 0
+  useCursorFollow: 1
   cursorFollowSpeed: 1
   useRandomGoal: 0
   goalFollowSpeed: 1
@@ -30,6 +32,6 @@ MonoBehaviour:
   obstacleAvoidDistance: 10
   obstacleAvoidSpeed: 100
   useIdleMvmt: 1
-  idleNoiseFrequency: 0.001
-  idleSpeed: 1
+  idleNoiseFrequency: 0.002
+  idleSpeed: 10
   useTimeOffset: 1

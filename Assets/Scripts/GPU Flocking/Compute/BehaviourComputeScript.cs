@@ -15,7 +15,11 @@ public class BehaviourComputeScript : MonoBehaviour
     public BoidBehaviourParams behaviourParams;
     public MouseTargetPosition mouseTargetPos;
     public GPUFlockManager flockManager;
+    public GPUFlockRenderer flockRenderer;
     public RenderTexture idleNoiseTex; //3D noise texture for idle movement
+
+    private ComputeBuffer flockBuffer; //stores flock boid structs 
+    private ComputeBuffer boidPositionsBuffer; //stores only the positions of the boids in the flock; for passing to GPUFlockRenderer
 
     private void Start()
     {
@@ -36,13 +40,19 @@ public class BehaviourComputeScript : MonoBehaviour
         GPUBoid[] flock = flockManager.GetFlock();
 
         /* Create a ComputeBuffer with data for existing boids */
-        ComputeBuffer flockBuffer = new ComputeBuffer(flock.Length, GPUBoid.sizeOfGPUBoid);
+        if (flockBuffer != null) flockBuffer.Release();
+        flockBuffer = new ComputeBuffer(flock.Length, GPUBoid.sizeOfGPUBoid);
         flockBuffer.SetData(flock);
 
         /* Set compute shader data */
         //boid info
         behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boids", flockBuffer);
         behaviourCompute.SetInt("numBoids", flock.Length);
+
+        //boid movement params
+        behaviourCompute.SetFloat("moveSpeed", behaviourParams.moveSpeed);
+        behaviourCompute.SetFloat("mass", behaviourParams.mass);
+        behaviourCompute.SetFloat("friction", behaviourParams.friction);
 
         //flocking params
         behaviourCompute.SetFloat("neighbourDist", behaviourParams.neighbourDistance);
@@ -68,9 +78,13 @@ public class BehaviourComputeScript : MonoBehaviour
         behaviourCompute.SetFloat("idleOffset", behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0f);
         behaviourCompute.SetFloat("idleMoveSpeed", behaviourParams.idleSpeed);
 
-        //move speed and delta time for calculating new position
-        behaviourCompute.SetFloat("moveSpeed", behaviourParams.moveSpeed);
+        //delta time for calculating new positions
         behaviourCompute.SetFloat("deltaTime", Time.deltaTime);
+
+        //boid positions buffer for Graphics.DrawMeshInstancedIndirect
+        if (boidPositionsBuffer != null) boidPositionsBuffer.Release();
+        boidPositionsBuffer = new ComputeBuffer(flock.Length, sizeof(float) * 4);
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", boidPositionsBuffer);
 
         /* Get number of threads */
         int numGroupsX = (flock.Length / GROUP_SIZE) + 1;
@@ -79,12 +93,16 @@ public class BehaviourComputeScript : MonoBehaviour
         behaviourCompute.Dispatch(behaviourComputerKernelHandle, numGroupsX, 1, 1);
 
         /* Send updated flock to flock manager */
+        //flockManager.SetFlockBuffer(flockBuffer);
         flockBuffer.GetData(flock);
         flockManager.SetFlock(flock);
-        
-        flockBuffer.Release();
+
+        /* Send updated boid positions to flock renderer */
+        flockRenderer.SetBoidPositionsBuffer(boidPositionsBuffer);
 
         stopwatch.Stop();
         Debug.Log("Boid compute time: " + stopwatch.ElapsedMilliseconds + " ms");
     }
+
+
 }

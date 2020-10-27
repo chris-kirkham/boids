@@ -5,7 +5,7 @@ using UnityEngine;
 [RequireComponent(typeof(GPUFlockSpawner))]
 public class GPUFlockManager : MonoBehaviour
 {
-    [SerializeField] [Min(1)] private int flockSize;
+    [SerializeField] [Min(1)] private int flockSize = 1024;
     private GPUBoid[] flock;
     private ComputeBuffer flockBuffer;
 
@@ -40,6 +40,11 @@ public class GPUFlockManager : MonoBehaviour
     public ComputeBuffer GetFlockBuffer()
     {
         return flockBuffer;
+    }
+
+    public void SetFlockBuffer(ComputeBuffer flockBuffer)
+    {
+        this.flockBuffer = flockBuffer;
     }
 
     public void SetFlock(GPUBoid[] flock)

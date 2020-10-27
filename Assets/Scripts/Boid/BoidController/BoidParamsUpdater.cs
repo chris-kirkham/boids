@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Updates the given boid params ScriptableObject(s) with user input 
+/// Updates the given boid params ScriptableObject with user input 
 /// </summary>
 public class BoidParamsUpdater : MonoBehaviour
 {

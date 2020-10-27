@@ -28,6 +28,12 @@ RWStructuredBuffer<Boid> boids;
 uint numBoids;
 
 /* Flock behaviour params, same for each boid */
+//boid movement
+float moveSpeed;
+float mass;
+float friction;
+float deltaTime; //to scale boid movement by time since last update
+
 //other boid reactions
 float neighbourDist;
 float avoidDist;
@@ -51,9 +57,8 @@ float idleNoiseFrequency;
 float idleOffset;
 float idleMoveSpeed;
 
-/* Boid movement params */
-float moveSpeed;
-float deltaTime;
+/* Flock positions buffer, for passing to Graphics.DrawMeshInstancedIndirect */
+RWStructuredBuffer<float4> boidPositions;
 
 float3 ReactToOtherBoids(uint id)
 {
@@ -77,13 +82,11 @@ float3 ReactToOtherBoids(uint id)
             if (dist < neighbourDist)
             {
                 neighbourCount++;
-                /*
-                if(dist < avoidDist) avoidDir += (pos - otherBoid.position) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance
-                centre += otherBoid.position - pos;
-                velocityMatch += otherBoid.velocity;
-                */
+                
+                if(dist < avoidDist) avoidDir += pos - otherBoid.position; 
+                //avoidDir += (pos - otherBoid.position) / saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance
 
-                if (dist < avoidDist) avoidDir += avoid(pos, vel, otherBoid.position, avoidSpeed); //scale avoid speed by distance
+
                 centre += otherBoid.position - pos;
                 velocityMatch += otherBoid.velocity;
             }
@@ -94,9 +97,7 @@ float3 ReactToOtherBoids(uint id)
     centre *= avg;
     velocityMatch *= avg;
 
-    //return (normalize(avoidDir) * avoidSpeed) + normalize(centre) + velocityMatch;
-    //return (avoidDir * avoidSpeed) + centre + velocityMatch;
-    return avoidDir + centre + velocityMatch;
+    return (avoidDir * avoidSpeed) + centre + velocityMatch;
 }
 
 
@@ -105,10 +106,8 @@ float3 MoveIdle(uint id)
     return Bcc4NoiseBaseDirectional3D((boids[id].position + idleOffset) * idleNoiseFrequency) * idleMoveSpeed * (int)usingIdleMvmt;
 }
 
-
 float3 FollowCursor(uint id)
 {
-    //return normalize(cursorPos - boids[id].position) * moveSpeed * (int)usingCursorFollow;
     return arrival(boids[id].position, boids[id].velocity, cursorPos, moveSpeed, 0.01, deltaTime) * (int)usingCursorFollow;
 }
 
@@ -123,9 +122,11 @@ float3 ReturnToBounds(uint id)
 void CSMain(uint3 id : SV_DispatchThreadID)
 {
     uint idX = id.x;
-    //float3 newVel = ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX) + ReturnToBounds(idX);
-    //float3 newPos = boids[idX].position + (newVel * moveSpeed * deltaTime);
-    float3 newVel = (ReactToOtherBoids(idX) + FollowCursor(idX)) * deltaTime;
-    float3 newPos = boids[idX].position + boids[idX].velocity + newVel;
+    float drag = 1 - friction;
+    float3 newVel = (boids[idX].velocity * drag) + ((ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX)) * deltaTime);
+    if (length(newVel) > (moveSpeed * deltaTime)) newVel = normalize(newVel) * moveSpeed * deltaTime;
+    float3 newPos = boids[idX].position + newVel;
+    
     boids[idX] = ConstructBoid(newPos, newVel);
+    boidPositions[idX] = float4(newPos, 1);
 }

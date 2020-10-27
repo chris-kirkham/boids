@@ -1,7 +1,5 @@
 ////BOID STEERING BEHAVIOURS, based on https://www.red3d.com/cwr/steer/gdc99/
 
-
-
 float3 seek(float3 boidPos, float3 boidVel, float3 targetPos, float maxSpeed)
 {
 	float3 desiredVel = normalize(targetPos - boidPos) * maxSpeed;
@@ -29,4 +27,10 @@ float3 arrival(float3 boidPos, float3 boidVel, float3 targetPos, float maxSpeed,
 	float3 steering = desiredVel - boidVel;
 	
 	return steering;
+}
+
+
+float3 applyForce(float3 force, float3 mass)
+{
+	return force / mass;
 }

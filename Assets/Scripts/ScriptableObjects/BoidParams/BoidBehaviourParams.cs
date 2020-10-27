@@ -5,8 +5,10 @@ using UnityEngine;
 [CreateAssetMenu(menuName = "Scriptable Objects/Boid Behaviour Params")]
 public class BoidBehaviourParams : ScriptableObject
 {
-    [Header("Move speed parameters")]
+    [Header("Force parameters")]
     public float moveSpeed = 5f;
+    [Min(0)] public float mass = 1f;
+    [Range(0, 1)] public float friction = 0f;
 
     [Header("Reaction to other boids")]
     public float neighbourDistance = 10f;
