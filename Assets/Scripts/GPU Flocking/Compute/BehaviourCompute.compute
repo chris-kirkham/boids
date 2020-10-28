@@ -6,6 +6,7 @@
 
 #include "../cgincs/bccNoise4.cginc"
 #include "../cgincs/boidSteering.cginc"
+#include "UnityCG.cginc"
 
 /* Boids */
 struct Boid
@@ -26,41 +27,42 @@ Boid ConstructBoid(float3 position, float3 velocity)
 RWStructuredBuffer<Boid> boids;
 uint numBoids;
 
-/* Flock behaviour params, same for each boid */
-//boid movement
-float moveSpeed;
-float mass;
-float friction;
-float deltaTime; //to scale boid movement by time since last update
-
-//other boid reactions
-float neighbourDist;
-float avoidDist;
-float avoidSpeed;
-
-//cursor following
-bool usingCursorFollow;
-float cursorFollowSpeed;
-float arrivalSlowStartDist;
-float3 cursorPos;
-
-//movement bounds
-bool usingBounds;
-float boundsSize;
-float3 boundsCentre;
-float boundsReturnSpeed;
-
-//idle movement
-bool usingIdleMvmt;
-Texture2D idleNoiseTex;
-float idleNoiseFrequency;
-float idleOffset;
-float idleMoveSpeed;
-
-/* Boid positions/forward directions/up directions buffers, for passing to Graphics.DrawMeshInstancedIndirect */
+/* Boid positions/forward directions buffers, for passing to Graphics.DrawMeshInstancedIndirect */
 RWStructuredBuffer<float4> boidPositions;
-//RWStructuredBuffer<float4> boidForwardDirs;
-//RWStructuredBuffer<float4> boidUpDirs;
+RWStructuredBuffer<float3> boidForwardDirs;
+
+/* Flock behaviour params, same for each boid */
+CBUFFER_START(Params)
+    //boid movement
+    float moveSpeed;
+    float mass;
+    float friction;
+    float deltaTime; //to scale boid movement by time since last update
+
+    //other boid reactions
+    float neighbourDist;
+    float avoidDist;
+    float avoidSpeed;
+
+    //cursor following
+    bool usingCursorFollow;
+    float cursorFollowSpeed;
+    float arrivalSlowStartDist;
+    float3 cursorPos;
+
+    //movement bounds
+    bool usingBounds;
+    float boundsSize;
+    float3 boundsCentre;
+    float boundsReturnSpeed;
+
+    //idle movement
+    bool usingIdleMvmt;
+    Texture2D idleNoiseTex;
+    float idleNoiseFrequency;
+    float idleOffset;
+    float idleMoveSpeed;
+CBUFFER_END
 
 float3 ReactToOtherBoids(uint id)
 {
@@ -83,24 +85,11 @@ float3 ReactToOtherBoids(uint id)
             float dist = distance(pos, otherBoidPos);
 
             //https://github.com/Shinao/Unity-GPU-Boids/blob/master/Assets/2-GPU_Boids_Compute/Boid_Simple.compute - look at
-
             //if (dist < neighbourDist && length(vel) > 0 && length(otherBoidVel) > 0 && dot(normalize(vel), normalize(otherBoidVel)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
             if (dist < neighbourDist)
             {
                 neighbourCount++;
                 
-                /*
-                if (dist < avoidDist)
-                {
-                    avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance
-                }
-                else
-                {
-                    centre += otherBoidPos - pos;
-                    velocityMatch += otherBoidVel;
-                }
-                */
-
                 //if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
                 avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)) * (dist < avoidDist); //scale avoid speed by distance (max ||boid pos - other boid pos||)
                 centre += otherBoidPos - pos;
@@ -112,17 +101,6 @@ float3 ReactToOtherBoids(uint id)
     float avg = 1 / (float)(neighbourCount + 1); //if neighbourCount == 0, add 1 to avoid a divide-by-zero
     centre *= avg;
     velocityMatch *= avg;
-
-    /*
-    if (length(avoidDir) > 0)
-    {
-        return (normalize(avoidDir) * avoidSpeed) + centre + velocityMatch;
-    }
-    else
-    {
-        return centre + velocityMatch;
-    }
-    */
 
     return (avoidDir * avoidSpeed) + centre + velocityMatch;
 }
@@ -158,4 +136,5 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
     boids[idX] = ConstructBoid(newPos, newVel);
     boidPositions[idX] = float4(newPos, 1);
+    boidForwardDirs[idX] = newVel;
 }

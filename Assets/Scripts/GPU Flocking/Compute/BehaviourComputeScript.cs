@@ -19,10 +19,6 @@ public class BehaviourComputeScript : MonoBehaviour
     private int behaviourComputerKernelHandle;
     private uint groupSizeX;
     private const int GROUP_SIZE = 64;
-    private ComputeBuffer flockBuffer; //stores flock boid structs 
-    private ComputeBuffer boidPositionsBuffer; //stores only the positions of the boids in the flock; for passing to GPUFlockRenderer
-    //private ComputeBuffer boidForwardDirectionsBuffer; //stores the forward vectors of the boids in the flock; for passing to GPUFlockRenderer
-    //private ComputeBuffer boidUpDirectionsBuffer; //stores the up vectors of the boids in the flock; for passing to GPUFlockRenderer
 
     private void Start()
     {
@@ -40,10 +36,6 @@ public class BehaviourComputeScript : MonoBehaviour
 
     private void OnDisable()
     {
-        if (flockBuffer != null) flockBuffer.Release();
-        if (boidPositionsBuffer != null) boidPositionsBuffer.Release();
-        //if (boidForwardDirectionsBuffer != null) boidForwardDirectionsBuffer.Release();
-        //if (boidUpDirectionsBuffer != null) boidUpDirectionsBuffer.Release();
     }
 
     private void DoCompute()
@@ -89,19 +81,14 @@ public class BehaviourComputeScript : MonoBehaviour
         behaviourCompute.SetFloat("deltaTime", Time.deltaTime);
 
         //boid positions buffer for Graphics.DrawMeshInstancedIndirect
-        if (boidPositionsBuffer != null) boidPositionsBuffer.Release();
-        boidPositionsBuffer = new ComputeBuffer(flockSize, sizeof(float) * 4);
         behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", flockRenderer.GetBoidPositionsBuffer());
 
         //boid forward and up directions buffer for Graphics.DrawMeshInstancedIndirect
-        /*
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", flockRenderer.GetBoidForwardDirectionsBuffer());
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", boidUpDirectionsBuffer);
-        */
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidForwardDirs", flockRenderer.GetBoidForwardDirsBuffer());
 
         /* Get number of threads */
         int numGroupsX = (flockSize / (int)groupSizeX);
-        if ((flockSize & (flockSize - 1)) != 0) numGroupsX++; //if flock size isn't a power of 2, add another group to catch extras (this assumes compute's group size is a power of 2)
+        if (flockSize % groupSizeX != 0) numGroupsX++; //if flock size isn't divisible by groupSizeX, add an extra group for the stragglers
 
         /* Dispatch compute shader */
         behaviourCompute.Dispatch(behaviourComputerKernelHandle, numGroupsX, 1, 1);

@@ -26,6 +26,7 @@ public class GPUFlockRenderer : MonoBehaviour
     private uint[] args;
 
     private ComputeBuffer boidPositions;
+    private ComputeBuffer boidForwardDirs;
 
     private Bounds bounds;
 
@@ -38,14 +39,15 @@ public class GPUFlockRenderer : MonoBehaviour
         args = new uint[5] { 0, 0, 0, 0, 0 };
 
         boidPositions = new ComputeBuffer(flockSize, sizeof(float) * 4);
-        Debug.Log("boid positions buffer: " + boidPositions.count);
+        boidForwardDirs = new ComputeBuffer(flockSize, sizeof(float) * 3);
 
         bounds = new Bounds(transform.position, Vector3.one * 100000f);
     }
 
     void Update()
     {
-        boidInstanceMaterial.SetBuffer("positionBuffer", boidPositions);
+        boidInstanceMaterial.SetBuffer("boidPositions", boidPositions);
+        boidInstanceMaterial.SetBuffer("boidForwardDirs", boidForwardDirs);
 
         //args
         uint numIndices = (boidMesh != null) ? (uint)boidMesh.GetIndexCount(0) : 0;
@@ -60,6 +62,7 @@ public class GPUFlockRenderer : MonoBehaviour
     {
         if(argsBuffer != null) argsBuffer.Release();
         if(boidPositions != null) boidPositions.Release();
+        if(boidForwardDirs != null) boidForwardDirs.Release();
     }
 
     public ComputeBuffer GetBoidPositionsBuffer()
@@ -70,5 +73,10 @@ public class GPUFlockRenderer : MonoBehaviour
     public void SetBoidPositionsBuffer(ComputeBuffer boidPositions)
     {
         this.boidPositions = boidPositions;
+    }
+
+    public ComputeBuffer GetBoidForwardDirsBuffer()
+    {
+        return boidForwardDirs;
     }
 }
