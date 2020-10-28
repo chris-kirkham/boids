@@ -25,7 +25,9 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			};
 
 			#ifdef UNITY_PROCEDURAL_INSTANCING_ENABLED
+			//https://github.com/Shinao/Unity-GPU-Boids/blob/master/Assets/3-GPU_Boids_Compute_Draw/Boids_Simple.shader - has lookat matrix
 				StructuredBuffer<float4> positionBuffer;
+				StructuredBuffer<float4> forwardDirectionBuffer;
 				//StructuredBuffer<float4> colorBuffer;
 			#endif
 

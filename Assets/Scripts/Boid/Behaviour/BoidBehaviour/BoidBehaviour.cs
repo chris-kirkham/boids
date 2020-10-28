@@ -1,9 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.Entities.UniversalDelegates;
-using Unity.Jobs;
 using UnityEngine;
-using UnityEngine.EventSystems;
 
 //[RequireComponent(typeof(BoidVision))]
 //[RequireComponent(typeof(BoidMovement))]

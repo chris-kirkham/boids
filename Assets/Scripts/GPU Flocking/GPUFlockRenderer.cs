@@ -58,8 +58,13 @@ public class GPUFlockRenderer : MonoBehaviour
 
     private void OnDisable()
     {
-        argsBuffer.Release();
-        boidPositions.Release();
+        if(argsBuffer != null) argsBuffer.Release();
+        if(boidPositions != null) boidPositions.Release();
+    }
+
+    public ComputeBuffer GetBoidPositionsBuffer()
+    {
+        return boidPositions;
     }
 
     public void SetBoidPositionsBuffer(ComputeBuffer boidPositions)

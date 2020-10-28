@@ -1,29 +1,36 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using Unity.Mathematics;
 using UnityEditor;
 using UnityEngine.Rendering;
 using UnityEngine;
 
-
+[RequireComponent(typeof(GPUFlockManager))]
+[RequireComponent(typeof(GPUFlockRenderer))]
 public class BehaviourComputeScript : MonoBehaviour
 {
-    public ComputeShader behaviourCompute;
-    private int behaviourComputerKernelHandle;
-    private const int GROUP_SIZE = 64;
-    
+    private GPUFlockManager flockManager;
+    private GPUFlockRenderer flockRenderer;
+
     public BoidBehaviourParams behaviourParams;
     public MouseTargetPosition mouseTargetPos;
-    public GPUFlockManager flockManager;
-    public GPUFlockRenderer flockRenderer;
     public RenderTexture idleNoiseTex; //3D noise texture for idle movement
 
+    public ComputeShader behaviourCompute;
+    private int behaviourComputerKernelHandle;
+    private uint groupSizeX;
+    private const int GROUP_SIZE = 64;
     private ComputeBuffer flockBuffer; //stores flock boid structs 
     private ComputeBuffer boidPositionsBuffer; //stores only the positions of the boids in the flock; for passing to GPUFlockRenderer
+    //private ComputeBuffer boidForwardDirectionsBuffer; //stores the forward vectors of the boids in the flock; for passing to GPUFlockRenderer
+    //private ComputeBuffer boidUpDirectionsBuffer; //stores the up vectors of the boids in the flock; for passing to GPUFlockRenderer
 
     private void Start()
     {
+        flockManager = GetComponent<GPUFlockManager>();
+        flockRenderer = GetComponent<GPUFlockRenderer>();
+
         behaviourComputerKernelHandle = behaviourCompute.FindKernel("CSMain");
+        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputerKernelHandle, out groupSizeX, out uint dummyY, out uint dummyZ);
     }
 
     private void Update()
@@ -31,23 +38,22 @@ public class BehaviourComputeScript : MonoBehaviour
         DoCompute();
     }
 
+    private void OnDisable()
+    {
+        if (flockBuffer != null) flockBuffer.Release();
+        if (boidPositionsBuffer != null) boidPositionsBuffer.Release();
+        //if (boidForwardDirectionsBuffer != null) boidForwardDirectionsBuffer.Release();
+        //if (boidUpDirectionsBuffer != null) boidUpDirectionsBuffer.Release();
+    }
+
     private void DoCompute()
     {
-        System.Diagnostics.Stopwatch stopwatch = new System.Diagnostics.Stopwatch();
-        stopwatch.Start();
-
-        /* Get flock from flock manager */
-        GPUBoid[] flock = flockManager.GetFlock();
-
-        /* Create a ComputeBuffer with data for existing boids */
-        if (flockBuffer != null) flockBuffer.Release();
-        flockBuffer = new ComputeBuffer(flock.Length, GPUBoid.sizeOfGPUBoid);
-        flockBuffer.SetData(flock);
-
+        int flockSize = flockManager.GetFlockSize();
+        
         /* Set compute shader data */
         //boid info
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boids", flockBuffer);
-        behaviourCompute.SetInt("numBoids", flock.Length);
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boids", flockManager.GetFlockBuffer());
+        behaviourCompute.SetInt("numBoids", flockSize);
 
         //boid movement params
         behaviourCompute.SetFloat("moveSpeed", behaviourParams.moveSpeed);
@@ -62,6 +68,7 @@ public class BehaviourComputeScript : MonoBehaviour
         //cursor following
         behaviourCompute.SetBool("usingCursorFollow", behaviourParams.useCursorFollow);
         behaviourCompute.SetFloat("cursorFollowSpeed", behaviourParams.cursorFollowSpeed);
+        behaviourCompute.SetFloat("arrivalSlowStartDist", behaviourParams.arrivalSlowStartDist);
         float[] cursorFollowPos = new float[3] { mouseTargetPos.mouseTargetPosition.x, mouseTargetPos.mouseTargetPosition.y, mouseTargetPos.mouseTargetPosition.z };
         behaviourCompute.SetFloats("cursorPos", cursorFollowPos);
 
@@ -83,25 +90,21 @@ public class BehaviourComputeScript : MonoBehaviour
 
         //boid positions buffer for Graphics.DrawMeshInstancedIndirect
         if (boidPositionsBuffer != null) boidPositionsBuffer.Release();
-        boidPositionsBuffer = new ComputeBuffer(flock.Length, sizeof(float) * 4);
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", boidPositionsBuffer);
+        boidPositionsBuffer = new ComputeBuffer(flockSize, sizeof(float) * 4);
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", flockRenderer.GetBoidPositionsBuffer());
+
+        //boid forward and up directions buffer for Graphics.DrawMeshInstancedIndirect
+        /*
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", flockRenderer.GetBoidForwardDirectionsBuffer());
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", boidUpDirectionsBuffer);
+        */
 
         /* Get number of threads */
-        int numGroupsX = (flock.Length / GROUP_SIZE) + 1;
+        int numGroupsX = (flockSize / (int)groupSizeX);
+        if ((flockSize & (flockSize - 1)) != 0) numGroupsX++; //if flock size isn't a power of 2, add another group to catch extras (this assumes compute's group size is a power of 2)
 
         /* Dispatch compute shader */
         behaviourCompute.Dispatch(behaviourComputerKernelHandle, numGroupsX, 1, 1);
-
-        /* Send updated flock to flock manager */
-        //flockManager.SetFlockBuffer(flockBuffer);
-        flockBuffer.GetData(flock);
-        flockManager.SetFlock(flock);
-
-        /* Send updated boid positions to flock renderer */
-        flockRenderer.SetBoidPositionsBuffer(boidPositionsBuffer);
-
-        stopwatch.Stop();
-        Debug.Log("Boid compute time: " + stopwatch.ElapsedMilliseconds + " ms");
     }
 
 

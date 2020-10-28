@@ -16,6 +16,7 @@ public class GPUFlockManager : MonoBehaviour
         spawner = GetComponent<GPUFlockSpawner>();
         flock = spawner.SpawnFlock(flockSize);
         flockBuffer = new ComputeBuffer(flockSize, GPUBoid.sizeOfGPUBoid);
+        flockBuffer.SetData(flock);
     }
 
     void Update()
@@ -24,7 +25,7 @@ public class GPUFlockManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        flockBuffer.Release();
+        if(flockBuffer != null) flockBuffer.Release();
     }
 
     public int GetFlockSize()

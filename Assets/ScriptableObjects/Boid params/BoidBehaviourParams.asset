@@ -12,26 +12,27 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 704c2dc85af21b1459d0181de1de7008, type: 3}
   m_Name: BoidBehaviourParams
   m_EditorClassIdentifier: 
-  moveSpeed: 25
+  moveSpeed: 1
   mass: 1
-  friction: 0
-  neighbourDistance: 10
-  avoidDistance: 5
+  friction: 0.01
+  neighbourDistance: 5
+  avoidDistance: 3
   avoidSpeed: 5
   numClosestToCheck: 5
-  useCursorFollow: 1
+  useCursorFollow: 0
   cursorFollowSpeed: 1
+  arrivalSlowStartDist: 10
   useRandomGoal: 0
   goalFollowSpeed: 1
-  useBoundingCoordinates: 1
+  useBoundingCoordinates: 0
   boundsCentre: {x: 0, y: 200, z: 0}
-  boundsSize: 50
-  boundsReturnSpeed: 1
+  boundsSize: 200
+  boundsReturnSpeed: 2
   usePreemptiveObstacleAvoidance: 1
   useObstacleRepulsion: 1
   obstacleAvoidDistance: 10
   obstacleAvoidSpeed: 100
   useIdleMvmt: 1
-  idleNoiseFrequency: 0.002
-  idleSpeed: 10
+  idleNoiseFrequency: 0.01
+  idleSpeed: 1
   useTimeOffset: 1

@@ -19,6 +19,9 @@ public class BoidBehaviourParams : ScriptableObject
     [Header("Cursor/goal following")]
     public bool useCursorFollow;
     public float cursorFollowSpeed = 1f;
+
+    [Tooltip("Distance from the target at which the boid will begin to slow down in anticipation of arriving at the target")]
+    public float arrivalSlowStartDist = 10f;
     public bool useRandomGoal;
     public float goalFollowSpeed = 1f;
 
