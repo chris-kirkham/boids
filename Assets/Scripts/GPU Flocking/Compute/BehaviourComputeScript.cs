@@ -34,10 +34,6 @@ public class BehaviourComputeScript : MonoBehaviour
         DoCompute();
     }
 
-    private void OnDisable()
-    {
-    }
-
     private void DoCompute()
     {
         int flockSize = flockManager.GetFlockSize();
@@ -65,10 +61,12 @@ public class BehaviourComputeScript : MonoBehaviour
         behaviourCompute.SetFloats("cursorPos", cursorFollowPos);
 
         //movement bounds
+        /*
         behaviourCompute.SetBool("usingBounds", behaviourParams.useBoundingCoordinates);
         behaviourCompute.SetFloat("boundsSize", behaviourParams.boundsSize);
         behaviourCompute.SetFloats("boundsCentre", new float[3] { behaviourParams.boundsCentre.x, behaviourParams.boundsCentre.y, behaviourParams.boundsCentre.z });
         behaviourCompute.SetFloat("boundsReturnSpeed", behaviourParams.boundsReturnSpeed);
+        */
 
         //idle move
         behaviourCompute.SetBool("usingIdleMvmt", behaviourParams.useIdleMvmt);

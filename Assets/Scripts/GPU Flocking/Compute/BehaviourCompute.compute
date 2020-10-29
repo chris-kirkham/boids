@@ -12,6 +12,7 @@
 struct Boid
 {
     float3 position, velocity;
+    //float2 pad1;
 };
 
 //boid constructor
@@ -20,6 +21,7 @@ Boid ConstructBoid(float3 position, float3 velocity)
     Boid boid;
     boid.position = position;
     boid.velocity = velocity;
+    //boid.pad1 = float2(0, 0);
     return boid;
 }
 
@@ -51,10 +53,12 @@ CBUFFER_START(Params)
     float3 cursorPos;
 
     //movement bounds
+    /*
     bool usingBounds;
     float boundsSize;
     float3 boundsCentre;
     float boundsReturnSpeed;
+    */
 
     //idle movement
     bool usingIdleMvmt;
@@ -77,8 +81,8 @@ float3 ReactToOtherBoids(uint id)
     uint neighbourCount = 0;
     for (uint i = 0; i < numBoids; i++)
     {
-        if (i != id)
-        {
+        //if (i != id)
+        //{
             Boid otherBoid = boids[i];
             float3 otherBoidPos = otherBoid.position;
             float3 otherBoidVel = otherBoid.velocity;
@@ -90,12 +94,12 @@ float3 ReactToOtherBoids(uint id)
             {
                 neighbourCount++;
                 
-                //if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
-                avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)) * (dist < avoidDist); //scale avoid speed by distance (max ||boid pos - other boid pos||)
+                if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
+                //avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)) * (dist < avoidDist); //scale avoid speed by distance (max ||boid pos - other boid pos||)
                 centre += otherBoidPos - pos;
                 velocityMatch += otherBoidVel;
             }
-        }
+        //}
     }
 
     float avg = 1 / (float)(neighbourCount + 1); //if neighbourCount == 0, add 1 to avoid a divide-by-zero
@@ -117,11 +121,13 @@ float3 FollowCursor(uint id)
     //return seek(boids[id].position, boids[id].velocity, cursorPos, cursorFollowSpeed);
 }
 
+/*
 float3 ReturnToBounds(uint id)
 {
     float3 position = boids[id].position;
     return normalize(boundsCentre - position) * boundsReturnSpeed * (int)(distance(boundsCentre, position) > boundsSize) * usingBounds;
 }
+*/
 
 //returns boid buffer with new positions and velocities
 [numthreads(GROUP_SIZE, 1, 1)]
@@ -130,7 +136,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     uint idX = id.x;
     
     float drag = 1 - friction;
-    float3 newVel = (boids[idX].velocity * drag) + ((ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX) + ReturnToBounds(idX)) * deltaTime);
+    float3 newVel = (boids[idX].velocity * drag) + ((ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX)) * deltaTime);
     //if (length(newVel) > (moveSpeed * deltaTime)) newVel = normalize(newVel) * moveSpeed * deltaTime;
     float3 newPos = boids[idX].position + newVel;
     

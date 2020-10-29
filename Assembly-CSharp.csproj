@@ -88,8 +88,8 @@
   <ItemGroup>
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise8.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\cgincs\boidSteering.cginc" />
+     <None Include="Assets\Scripts\GPU Flocking\cgincs\gpuBoid.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise4.cginc" />
-     <None Include="Assets\Scripts\GPU Flow Field\cgincs\AStar.cginc" />
      <None Include="Assets\Shaders\Boid_InstancedIndirectCompute.shader" />
      <None Include="Assets\Shaders\cginc\Perlin.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\Compute\BehaviourCompute.compute" />

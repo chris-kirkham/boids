@@ -10351,7 +10351,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 40470b3b5ef46254980ea9bb0e580fd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  flockSize: 32000
+  flockSize: 32768
 --- !u!4 &739206801
 Transform:
   m_ObjectHideFlags: 0

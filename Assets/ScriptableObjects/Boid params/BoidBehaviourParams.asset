@@ -21,7 +21,7 @@ MonoBehaviour:
   numClosestToCheck: 5
   useCursorFollow: 0
   cursorFollowSpeed: 1
-  arrivalSlowStartDist: 10
+  arrivalSlowStartDist: 50
   useRandomGoal: 0
   goalFollowSpeed: 1
   useBoundingCoordinates: 1
