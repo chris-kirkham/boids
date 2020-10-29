@@ -14,25 +14,25 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 1
   mass: 1
-  friction: 0.02
+  friction: 0.1
   neighbourDistance: 5
   avoidDistance: 3
-  avoidSpeed: 10
+  avoidSpeed: 2
   numClosestToCheck: 5
   useCursorFollow: 0
   cursorFollowSpeed: 1
   arrivalSlowStartDist: 50
   useRandomGoal: 0
-  goalFollowSpeed: 1
-  useBoundingCoordinates: 1
-  boundsCentre: {x: 0, y: 200, z: 0}
+  goalFollowSpeed: 5
+  useBoundingCoordinates: 0
+  boundsCentre: {x: 0, y: 250, z: 0}
   boundsSize: 200
-  boundsReturnSpeed: 2
+  boundsReturnSpeed: 1
   usePreemptiveObstacleAvoidance: 1
   useObstacleRepulsion: 1
   obstacleAvoidDistance: 10
   obstacleAvoidSpeed: 100
   useIdleMvmt: 1
-  idleNoiseFrequency: 0.01
+  idleNoiseFrequency: 0.005
   idleSpeed: 1
   useTimeOffset: 1

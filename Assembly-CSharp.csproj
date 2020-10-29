@@ -84,11 +84,14 @@
     <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPUBoid.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidCollectiveController.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\Compute\BehaviourComputeScript_Staggered.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPUAttractorRepulsor.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise8.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\cgincs\boidSteering.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\cgincs\gpuBoid.cginc" />
+     <None Include="Assets\Scripts\GPU Flocking\Compute\BehaviourCompute_Staggered.compute" />
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise4.cginc" />
      <None Include="Assets\Shaders\Boid_InstancedIndirectCompute.shader" />
      <None Include="Assets\Shaders\cginc\Perlin.cginc" />

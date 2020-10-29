@@ -6,7 +6,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(GPUFlockManager))]
 [RequireComponent(typeof(GPUFlockRenderer))]
-public class BehaviourComputeScript : MonoBehaviour
+public class BehaviourComputeScript_Staggered : MonoBehaviour
 {
     private GPUFlockManager flockManager;
     private GPUFlockRenderer flockRenderer;
@@ -19,6 +19,12 @@ public class BehaviourComputeScript : MonoBehaviour
     private int behaviourComputerKernelHandle;
     private uint groupSizeX;
 
+    //stagger params
+    [Min(1)] public int framesToComputeEntireFlock = 2;
+    private int boidsToComputePerFrame;
+    private int offset = 0;
+
+
     private void Start()
     {
         flockManager = GetComponent<GPUFlockManager>();
@@ -26,18 +32,27 @@ public class BehaviourComputeScript : MonoBehaviour
 
         behaviourComputerKernelHandle = behaviourCompute.FindKernel("CSMain");
         behaviourCompute.GetKernelThreadGroupSizes(behaviourComputerKernelHandle, out groupSizeX, out uint dummyY, out uint dummyZ);
+
+        boidsToComputePerFrame = flockManager.GetFlockSize() / framesToComputeEntireFlock;
     }
 
     private void Update()
     {
         DoCompute();
+        offset += boidsToComputePerFrame;
+        if (offset >= flockManager.GetFlockSize()) offset = 0;
     }
 
     private void DoCompute()
     {
         int flockSize = flockManager.GetFlockSize();
-        
+
         /* Set compute shader data */
+        //offset
+        behaviourCompute.SetInt("boidsToCompute", boidsToComputePerFrame);
+        behaviourCompute.SetInt("boidOffset", offset);
+        behaviourCompute.SetInt("framesToComputeEntireFlock", framesToComputeEntireFlock);
+
         //boid info
         behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boids", flockManager.GetFlockBuffer());
         behaviourCompute.SetInt("numBoids", flockSize);
@@ -60,12 +75,10 @@ public class BehaviourComputeScript : MonoBehaviour
         behaviourCompute.SetFloats("cursorPos", cursorFollowPos);
 
         //movement bounds
-        /*
         behaviourCompute.SetBool("usingBounds", behaviourParams.useBoundingCoordinates);
         behaviourCompute.SetFloat("boundsSize", behaviourParams.boundsSize);
         behaviourCompute.SetFloats("boundsCentre", new float[3] { behaviourParams.boundsCentre.x, behaviourParams.boundsCentre.y, behaviourParams.boundsCentre.z });
         behaviourCompute.SetFloat("boundsReturnSpeed", behaviourParams.boundsReturnSpeed);
-        */
 
         //idle move
         behaviourCompute.SetBool("usingIdleMvmt", behaviourParams.useIdleMvmt);

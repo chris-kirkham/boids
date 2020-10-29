@@ -2,4 +2,11 @@ Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins p
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
   error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
-  api=4 insize=4574 outsize=8984 ok=1
+  api=4 insize=4443 outsize=8330 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  error: 2 plat 4 at BehaviourCompute_Staggered.compute(132): undeclared identifier 'boundsCentre'
+  api=4 insize=4590 outsize=0 ok=0
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=4585 outsize=9130 ok=1
