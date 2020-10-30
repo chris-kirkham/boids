@@ -66,6 +66,7 @@
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidVision\BoidVision.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\Perlin.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\Compute\BehaviourComputeScript.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\Compute\BehaviourComputeScript_Staggered.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPUFlockRenderer.cs" />
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHash.cs" />
@@ -84,8 +85,10 @@
     <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPUBoid.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidCollectiveController.cs" />
-    <Compile Include="Assets\Scripts\GPU Flocking\Compute\BehaviourComputeScript_Staggered.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPUAffectorManager.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\BoidAffector.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPUAttractorRepulsor.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPUPusher.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise8.cginc" />

@@ -14,13 +14,13 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   moveSpeed: 1
   mass: 1
-  friction: 0.1
-  neighbourDistance: 5
-  avoidDistance: 3
-  avoidSpeed: 2
+  friction: 0.02
+  neighbourDistance: 25
+  avoidDistance: 5
+  avoidSpeed: 1
   numClosestToCheck: 5
   useCursorFollow: 0
-  cursorFollowSpeed: 1
+  cursorFollowSpeed: 2
   arrivalSlowStartDist: 50
   useRandomGoal: 0
   goalFollowSpeed: 5
@@ -32,7 +32,7 @@ MonoBehaviour:
   useObstacleRepulsion: 1
   obstacleAvoidDistance: 10
   obstacleAvoidSpeed: 100
-  useIdleMvmt: 1
-  idleNoiseFrequency: 0.005
+  useIdleMvmt: 0
+  idleNoiseFrequency: 0.01
   idleSpeed: 1
   useTimeOffset: 1

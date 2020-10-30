@@ -48,7 +48,7 @@ public class ControlInputs : MonoBehaviour
         //boid behaviour
         useMouseFollow = false;
         useRandomGoal = false;
-        useBoundingCoordinates = true;
+        useBoundingCoordinates = false;
 
         //boid spawning/destruction
         spawnNewBoid = false;
