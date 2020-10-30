@@ -15,11 +15,11 @@ MonoBehaviour:
   moveSpeed: 1
   mass: 1
   friction: 0.02
-  neighbourDistance: 25
-  avoidDistance: 5
-  avoidSpeed: 1
+  neighbourDistance: 5
+  avoidDistance: 3
+  avoidSpeed: 5
   numClosestToCheck: 5
-  useCursorFollow: 0
+  useCursorFollow: 1
   cursorFollowSpeed: 2
   arrivalSlowStartDist: 50
   useRandomGoal: 0
@@ -34,5 +34,5 @@ MonoBehaviour:
   obstacleAvoidSpeed: 100
   useIdleMvmt: 0
   idleNoiseFrequency: 0.01
-  idleSpeed: 1
+  idleSpeed: 2
   useTimeOffset: 1

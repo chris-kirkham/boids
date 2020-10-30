@@ -57,6 +57,8 @@
   <ItemGroup>
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidMovement\BoidMovement.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\MouseTargetPosition.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPUAffectorManager.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPU Structs\GPUAttractorRepulsor.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_FrameTime.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_NumBoids.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPUFlockSpawner.cs" />
@@ -71,7 +73,9 @@
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHash.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\BoidParams\BoidBehaviourParams.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPU Structs\GPUPusher.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidParamsUpdater.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\BoidAffector.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\DirectionalPerlin.cs" />
     <Compile Include="Assets\Scripts\ControlInputs.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDebug.cs" />
@@ -83,12 +87,8 @@
     <Compile Include="Assets\Scripts\UI\HUD_MouseFollow.cs" />
     <Compile Include="Assets\Scripts\CameraController.cs" />
     <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
-    <Compile Include="Assets\Scripts\GPU Flocking\GPUBoid.cs" />
+    <Compile Include="Assets\Scripts\GPU Flocking\GPU Structs\GPUBoid.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidCollectiveController.cs" />
-    <Compile Include="Assets\Scripts\GPU Flocking\GPUAffectorManager.cs" />
-    <Compile Include="Assets\Scripts\GPU Flocking\BoidAffector.cs" />
-    <Compile Include="Assets\Scripts\GPU Flocking\GPUAttractorRepulsor.cs" />
-    <Compile Include="Assets\Scripts\GPU Flocking\GPUPusher.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise8.cginc" />
@@ -96,6 +96,7 @@
      <None Include="Assets\Scripts\GPU Flocking\cgincs\gpuBoid.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\Compute\BehaviourCompute_Staggered.compute" />
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise4.cginc" />
+     <None Include="Assets\Scripts\GPU Flocking\cgincs\affectors.cginc" />
      <None Include="Assets\Shaders\Boid_InstancedIndirectCompute.shader" />
      <None Include="Assets\Shaders\cginc\Perlin.cginc" />
      <None Include="Assets\Scripts\GPU Flocking\Compute\BehaviourCompute.compute" />

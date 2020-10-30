@@ -6,6 +6,7 @@ using UnityEngine;
 
 [RequireComponent(typeof(GPUFlockManager))]
 [RequireComponent(typeof(GPUFlockRenderer))]
+[RequireComponent(typeof(GPUAffectorManager))]
 public class BehaviourComputeScript_Staggered : MonoBehaviour
 {
     private GPUFlockManager flockManager;

@@ -8,10 +8,11 @@ using UnityEngine;
 public class GPUAffectorManager : MonoBehaviour
 {
     private ComputeBuffer attractorsBuffer, repulsorsBuffer, pushersBuffer;
+    private int numAttractors, numRepulsors, numPushers;
 
-    // Start is called before the first frame update
     void Start()
     {
+        /* Get affectors from scene and convert to ComputeBuffers */ 
         BoidAffector[] affectors = FindObjectsOfType<BoidAffector>();
         List<GPUAttractorRepulsor> attractors = new List<GPUAttractorRepulsor>();
         List<GPUAttractorRepulsor> repulsors = new List<GPUAttractorRepulsor>();
@@ -30,17 +31,68 @@ public class GPUAffectorManager : MonoBehaviour
                     pushers.Add(new GPUPusher(ar.transform.position, ar.transform.forward, ar.radius, ar.strength));
                     break;
                 default:
-                    Debug.LogError("Tried to add Unknown affector type to affector buffers; did you add a new one and not update this????");
+                    Debug.LogError("Tried to add unknown affector type to affector buffers; did you add a new one and not update this????");
                     break;
             }
         }
 
-        attractorsBuffer = new ComputeBuffer(attractors.Count, GPUAttractorRepulsor.sizeofGPUAttractorRepulsor);
-        repulsorsBuffer = new ComputeBuffer(repulsors.Count, GPUAttractorRepulsor.sizeofGPUAttractorRepulsor);
-        pushersBuffer = new ComputeBuffer(pushers.Count, GPUPusher.sizeofGPUPusher);
+        numAttractors = attractors.Count;
+        numRepulsors = repulsors.Count;
+        numPushers = pushers.Count;
 
-        attractorsBuffer.SetData(attractors);
-        repulsorsBuffer.SetData(repulsors);
-        pushersBuffer.SetData(pushers);
+        if(numAttractors > 0)
+        {
+            attractorsBuffer = new ComputeBuffer(attractors.Count, GPUAttractorRepulsor.sizeofGPUAttractorRepulsor);
+            attractorsBuffer.SetData(attractors);
+        }
+
+        if(numRepulsors > 0)
+        {
+            repulsorsBuffer = new ComputeBuffer(repulsors.Count, GPUAttractorRepulsor.sizeofGPUAttractorRepulsor);
+            repulsorsBuffer.SetData(repulsors);
+        }
+
+        if(numPushers > 0)
+        {
+            pushersBuffer = new ComputeBuffer(pushers.Count, GPUPusher.sizeofGPUPusher);
+            pushersBuffer.SetData(pushers);
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (attractorsBuffer != null) attractorsBuffer.Release();
+        if (repulsorsBuffer != null) repulsorsBuffer.Release();
+        if (pushersBuffer != null) pushersBuffer.Release();
+    }
+
+    public ComputeBuffer GetAttractorsBuffer()
+    {
+        return attractorsBuffer;
+    }
+
+    public ComputeBuffer GetRepulsorsBuffer()
+    {
+        return repulsorsBuffer;
+    }
+
+    public ComputeBuffer GetPushersBuffer()
+    {
+        return pushersBuffer;
+    }
+
+    public int GetNumAttractors()
+    {
+        return numAttractors;
+    }
+
+    public int GetNumRepulsors()
+    {
+        return numRepulsors;
+    }
+
+    public int GetNumPushers()
+    {
+        return numPushers;
     }
 }

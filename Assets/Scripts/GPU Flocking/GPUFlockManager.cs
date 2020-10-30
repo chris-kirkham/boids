@@ -52,16 +52,4 @@ public class GPUFlockManager : MonoBehaviour
     {
         this.flock = flock;
     }
-
-    public void OnDrawGizmos()
-    {
-        if(Application.isPlaying)
-        {
-            Gizmos.color = Color.blue;
-            foreach (GPUBoid boid in flock)
-            {
-                Gizmos.DrawSphere(boid.position, 1f);
-            }
-        }
-    }
 }

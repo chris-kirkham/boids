@@ -6,10 +6,12 @@ using UnityEngine;
 
 [RequireComponent(typeof(GPUFlockManager))]
 [RequireComponent(typeof(GPUFlockRenderer))]
+[RequireComponent(typeof(GPUAffectorManager))]
 public class BehaviourComputeScript : MonoBehaviour
 {
     private GPUFlockManager flockManager;
     private GPUFlockRenderer flockRenderer;
+    private GPUAffectorManager affectorManager;
 
     public BoidBehaviourParams behaviourParams;
     public MouseTargetPosition mouseTargetPos;
@@ -23,6 +25,7 @@ public class BehaviourComputeScript : MonoBehaviour
     {
         flockManager = GetComponent<GPUFlockManager>();
         flockRenderer = GetComponent<GPUFlockRenderer>();
+        affectorManager = GetComponent<GPUAffectorManager>();
 
         behaviourComputerKernelHandle = behaviourCompute.FindKernel("CSMain");
         behaviourCompute.GetKernelThreadGroupSizes(behaviourComputerKernelHandle, out groupSizeX, out uint dummyY, out uint dummyZ);
@@ -76,6 +79,21 @@ public class BehaviourComputeScript : MonoBehaviour
 
         //delta time for calculating new positions
         behaviourCompute.SetFloat("deltaTime", Time.deltaTime);
+
+        //affectors buffers
+        ComputeBuffer affectorDummy = new ComputeBuffer(1, sizeof(int)); //dummy compute buffer for if there are no affectors of that type (must be a better way to do this)
+
+        int numAttractors = affectorManager.GetNumAttractors();
+        behaviourCompute.SetInt("numAttractors", numAttractors);
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "attractors", numAttractors > 0 ? affectorManager.GetAttractorsBuffer() : affectorDummy);
+
+        int numRepulsors = affectorManager.GetNumRepulsors();
+        behaviourCompute.SetInt("numRepulsors", numRepulsors);
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "repulsors", numRepulsors > 0 ? affectorManager.GetRepulsorsBuffer() : affectorDummy);
+
+        int numPushers = affectorManager.GetNumPushers();
+        behaviourCompute.SetInt("numPushers", numPushers);
+        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "pushers", numPushers > 0 ? affectorManager.GetPushersBuffer() : affectorDummy);
 
         //boid positions buffer for Graphics.DrawMeshInstancedIndirect
         behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", flockRenderer.GetBoidPositionsBuffer());

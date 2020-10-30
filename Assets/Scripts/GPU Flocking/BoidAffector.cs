@@ -15,6 +15,7 @@ public class BoidAffector : MonoBehaviour
     //visualises affector
     private void OnDrawGizmos()
     {
+        //draw area of effect sphere
         if(type == Type.Attractor)
         {
             Gizmos.color = Color.green;
@@ -31,5 +32,8 @@ public class BoidAffector : MonoBehaviour
             Gizmos.DrawWireSphere(transform.position, radius);
             Gizmos.DrawRay(transform.position, transform.forward * strength);
         }
+
+        //draw centre sphere for an editor handle
+        Gizmos.DrawSphere(transform.position, 0.5f);
     }
 }
