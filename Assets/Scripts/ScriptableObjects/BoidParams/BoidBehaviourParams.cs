@@ -7,6 +7,7 @@ public class BoidBehaviourParams : ScriptableObject
 {
     [Header("Force parameters")]
     public float moveSpeed = 5f;
+    public float maxSpeed = 10f;
     [Min(0)] public float mass = 1f;
     [Range(0, 1)] public float friction = 0f;
 

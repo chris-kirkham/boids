@@ -6,6 +6,7 @@
 
 #include "../cgincs/bccNoise4.cginc"
 #include "../cgincs/boidSteering.cginc"
+#include "../cgincs/affectors.cginc"
 #include "UnityCG.cginc"
 
 /* Boids */
@@ -38,37 +39,46 @@ uint boidsToCompute;
 uint boidOffset;
 uint framesToComputeEntireFlock;
 
+/* Boid affector buffers */
+StructuredBuffer<AttractorRepulsor> attractors;
+uint numAttractors;
+StructuredBuffer<AttractorRepulsor> repulsors;
+uint numRepulsors;
+StructuredBuffer<Pusher> pushers;
+uint numPushers;
+
 /* Flock behaviour params, same for each boid */
 CBUFFER_START(Params)
-//boid movement
-float moveSpeed;
-float mass;
-float friction;
-float deltaTime; //to scale boid movement by time since last update
+    //boid movement
+    float moveSpeed;
+    float maxSpeed;
+    float mass;
+    float friction;
+    float deltaTime; //to scale boid movement by time since last update
 
-//other boid reactions
-float neighbourDist;
-float avoidDist;
-float avoidSpeed;
+    //other boid reactions
+    float neighbourDist;
+    float avoidDist;
+    float avoidSpeed;
 
-//cursor following
-bool usingCursorFollow;
-float cursorFollowSpeed;
-float arrivalSlowStartDist;
-float3 cursorPos;
+    //cursor following
+    bool usingCursorFollow;
+    float cursorFollowSpeed;
+    float arrivalSlowStartDist;
+    float3 cursorPos;
 
-//movement bounds
-bool usingBounds;
-float boundsSize;
-float3 boundsCentre;
-float boundsReturnSpeed;
+    //movement bounds
+    bool usingBounds;
+    float boundsSize;
+    float3 boundsCentre;
+    float boundsReturnSpeed;
 
-//idle movement
-bool usingIdleMvmt;
-Texture2D idleNoiseTex;
-float idleNoiseFrequency;
-float idleOffset;
-float idleMoveSpeed;
+    //idle movement
+    bool usingIdleMvmt;
+    Texture2D idleNoiseTex;
+    float idleNoiseFrequency;
+    float idleOffset;
+    float idleMoveSpeed;
 CBUFFER_END
 
 float3 ReactToOtherBoids(uint id)
@@ -128,6 +138,34 @@ float3 ReturnToBounds(uint id)
     return normalize(boundsCentre - position) * boundsReturnSpeed * (distance(boundsCentre, position) > boundsSize) * usingBounds;
 }
 
+float3 AffectorInfluence(uint id)
+{
+    float3 dir = float3(0, 0, 0);
+    float3 pos = boids[id].position;
+    float3 vel = boids[id].velocity;
+
+    for (uint i = 0; i < numAttractors; i++)
+    {
+        AttractorRepulsor a = attractors[i];
+        if (distance(a.position, pos) <= a.radius) dir += arrival(pos, vel, a.position, a.strength, arrivalSlowStartDist);
+    }
+
+    for (uint j = 0; j < numRepulsors; j++)
+    {
+        AttractorRepulsor r = repulsors[j];
+        //if (distance(r.position, pos) <= r.radius) dir += avoidDistanceBased(pos, vel, r.position, r.radius, r.strength);
+        if (distance(r.position, pos) <= r.radius) dir += avoid(pos, vel, r.position, r.strength);
+    }
+
+    for (uint k = 0; k < numPushers; k++)
+    {
+        Pusher p = pushers[k];
+        if (distance(p.position, pos) <= p.radius) dir += p.direction * p.strength;
+    }
+
+    return dir;
+}
+
 //returns boid buffer with new positions and velocities
 [numthreads(GROUP_SIZE, 1, 1)]
 void CSMain(uint3 id : SV_DispatchThreadID)
@@ -138,7 +176,8 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     float3 newVel = boids[idX].velocity * drag;
     if (idX >= boidOffset && idX < boidOffset + boidsToCompute)
     {
-        newVel += (ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX) + ReturnToBounds(idX)) * deltaTime * framesToComputeEntireFlock;
+        newVel += (ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX) + AffectorInfluence(id) + ReturnToBounds(idX)) * deltaTime * framesToComputeEntireFlock;
+        if (length(newVel) > (maxSpeed * deltaTime)) newVel = normalize(newVel) * maxSpeed * deltaTime;
     }
 
     float3 newPos = boids[idX].position + newVel;

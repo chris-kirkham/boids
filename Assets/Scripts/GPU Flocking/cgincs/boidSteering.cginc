@@ -16,6 +16,16 @@ float3 avoid(float3 boidPos, float3 boidVel, float3 targetPos, float maxSpeed)
 	return steering;
 }
 
+float3 avoidDistanceBased(float3 boidPos, float3 boidVel, float3 targetPos, float avoidDist, float maxSpeed)
+{
+	float3 targetOffset = targetPos - boidPos;
+	float speed = maxSpeed * saturate(1 - (length(targetOffset) / avoidDist));
+	float3 desiredVel = speed * normalize(targetOffset);
+	float3 steering = desiredVel - boidVel;
+
+	return steering;
+}
+
 //simulates an "arrival" behaviour, in which the boid moves at full speed until it gets within a certain distance of the target (slowStartDist),
 //at which point it starts to move slower the closer it gets to the target
 float3 arrival(float3 boidPos, float3 boidVel, float3 targetPos, float maxSpeed, float slowStartDist)

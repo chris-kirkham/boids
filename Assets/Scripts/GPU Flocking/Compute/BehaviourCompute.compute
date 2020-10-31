@@ -46,6 +46,7 @@ uint numPushers;
 CBUFFER_START(Params)
     //boid movement
     float moveSpeed;
+    float maxSpeed;
     float mass;
     float friction;
     float deltaTime; //to scale boid movement by time since last update
@@ -62,12 +63,10 @@ CBUFFER_START(Params)
     float3 cursorPos;
 
     //movement bounds
-    /*
     bool usingBounds;
     float boundsSize;
     float3 boundsCentre;
     float boundsReturnSpeed;
-    */
 
     //idle movement
     bool usingIdleMvmt;
@@ -98,13 +97,12 @@ float3 ReactToOtherBoids(uint id)
             float dist = distance(pos, otherBoidPos);
 
             //https://github.com/Shinao/Unity-GPU-Boids/blob/master/Assets/2-GPU_Boids_Compute/Boid_Simple.compute - look at
-            //if (dist < neighbourDist && length(vel) > 0 && length(otherBoidVel) > 0 && dot(normalize(vel), normalize(otherBoidVel)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
-            if (dist < neighbourDist)
+            if (dist < neighbourDist && length(vel) > 0 && length(otherBoidVel) > 0 && dot(normalize(vel), normalize(otherBoidVel)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
+            //if (dist < neighbourDist)
             {
                 neighbourCount++;
                 
                 if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
-                //avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)) * (dist < avoidDist); //scale avoid speed by distance (max ||boid pos - other boid pos||)
                 centre += otherBoidPos - pos;
                 velocityMatch += otherBoidVel;
             }
@@ -127,16 +125,13 @@ float3 MoveIdle(uint id)
 float3 FollowCursor(uint id)
 {
     return arrival(boids[id].position, boids[id].velocity, cursorPos, cursorFollowSpeed, arrivalSlowStartDist) * (int)usingCursorFollow;
-    //return seek(boids[id].position, boids[id].velocity, cursorPos, cursorFollowSpeed);
 }
 
-/*
 float3 ReturnToBounds(uint id)
 {
     float3 position = boids[id].position;
     return normalize(boundsCentre - position) * boundsReturnSpeed * (int)(distance(boundsCentre, position) > boundsSize) * usingBounds;
 }
-*/
 
 float3 AffectorInfluence(uint id)
 {
@@ -153,6 +148,7 @@ float3 AffectorInfluence(uint id)
     for (uint j = 0; j < numRepulsors; j++)
     {
         AttractorRepulsor r = repulsors[j];
+        //if (distance(r.position, pos) <= r.radius) dir += avoidDistanceBased(pos, vel, r.position, r.radius, r.strength);
         if (distance(r.position, pos) <= r.radius) dir += avoid(pos, vel, r.position, r.strength);
     }
 
@@ -173,7 +169,7 @@ void CSMain(uint3 id : SV_DispatchThreadID)
     
     float drag = 1 - friction;
     float3 newVel = (boids[idX].velocity * drag) + ((ReactToOtherBoids(idX) + FollowCursor(idX) + MoveIdle(idX) + AffectorInfluence(id)) * deltaTime);
-    //if (length(newVel) > (moveSpeed * deltaTime)) newVel = normalize(newVel) * moveSpeed * deltaTime;
+    if (length(newVel) > (maxSpeed * deltaTime)) newVel = normalize(newVel) * maxSpeed * deltaTime;
     float3 newPos = boids[idX].position + newVel;
     
     boids[idX] = ConstructBoid(newPos, newVel);

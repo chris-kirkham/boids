@@ -29,7 +29,6 @@ public class CameraController : MonoBehaviour
         movement = transform.TransformDirection(movement); //transform movement input so its direction is relative to the camera's rotation
 
         return movement * moveSpeed;
-
     }
 
     Quaternion calcMouseLook()

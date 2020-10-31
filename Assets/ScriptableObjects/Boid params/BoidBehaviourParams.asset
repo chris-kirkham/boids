@@ -13,26 +13,27 @@ MonoBehaviour:
   m_Name: BoidBehaviourParams
   m_EditorClassIdentifier: 
   moveSpeed: 1
+  maxSpeed: 100
   mass: 1
   friction: 0.02
   neighbourDistance: 5
-  avoidDistance: 3
+  avoidDistance: 2
   avoidSpeed: 5
   numClosestToCheck: 5
-  useCursorFollow: 1
-  cursorFollowSpeed: 2
+  useCursorFollow: 0
+  cursorFollowSpeed: 1
   arrivalSlowStartDist: 50
   useRandomGoal: 0
   goalFollowSpeed: 5
   useBoundingCoordinates: 0
   boundsCentre: {x: 0, y: 250, z: 0}
   boundsSize: 200
-  boundsReturnSpeed: 1
+  boundsReturnSpeed: 50
   usePreemptiveObstacleAvoidance: 1
   useObstacleRepulsion: 1
   obstacleAvoidDistance: 10
   obstacleAvoidSpeed: 100
-  useIdleMvmt: 0
-  idleNoiseFrequency: 0.01
-  idleSpeed: 2
+  useIdleMvmt: 1
+  idleNoiseFrequency: 0.003
+  idleSpeed: 1
   useTimeOffset: 1

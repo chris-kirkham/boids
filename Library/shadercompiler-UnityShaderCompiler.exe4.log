@@ -1,4 +1,10 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=5845 outsize=10115 ok=1
+Cmd: compileComputeKernel
+  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=5691 outsize=11207 ok=1
 
 Quitting shader compiler process

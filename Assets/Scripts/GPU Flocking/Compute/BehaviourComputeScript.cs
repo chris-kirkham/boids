@@ -17,9 +17,29 @@ public class BehaviourComputeScript : MonoBehaviour
     public MouseTargetPosition mouseTargetPos;
     public RenderTexture idleNoiseTex; //3D noise texture for idle movement
 
+    //compute shaders
     public ComputeShader behaviourCompute;
-    private int behaviourComputerKernelHandle;
-    private uint groupSizeX;
+    public ComputeShader behaviourComputeBatched;
+
+    //params for batch compute
+    [Tooltip("If true, divide flock into n batches and compute one batch per frame. This will improve performance considerably" +
+        "and, when n is not too high, should not make a noticeable difference to the responsiveness of the flock. NOTE: This should not be changed during gameplay")]
+    public bool useBatchedCompute = false;
+    
+    [Min(1)] public int framesToComputeEntireFlock = 2;
+    private int boidsToComputePerFrame;
+    private int offset = 0;
+
+    //compute kernel handles
+    private int behaviourComputeKernelHandle;
+    private int behaviourComputeBatchedKernelHandle;
+
+    //compute group sizes
+    private uint nonBatchedGroupSizeX;
+    private uint batchedGroupSizeX;
+
+    //dummy compute buffer passed to shader when there are no affectors of a certain type (must be a better way to do this)
+    private ComputeBuffer affectorDummy;
 
     private void Start()
     {
@@ -27,87 +47,155 @@ public class BehaviourComputeScript : MonoBehaviour
         flockRenderer = GetComponent<GPUFlockRenderer>();
         affectorManager = GetComponent<GPUAffectorManager>();
 
-        behaviourComputerKernelHandle = behaviourCompute.FindKernel("CSMain");
-        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputerKernelHandle, out groupSizeX, out uint dummyY, out uint dummyZ);
+        behaviourComputeKernelHandle = behaviourCompute.FindKernel("CSMain");
+        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputeKernelHandle, out nonBatchedGroupSizeX, out uint dummyY, out uint dummyZ);
+        behaviourComputeBatchedKernelHandle = behaviourComputeBatched.FindKernel("CSMain");
+        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputeKernelHandle, out batchedGroupSizeX, out dummyY, out dummyZ);
+
+        affectorDummy = new ComputeBuffer(1, sizeof(int));
+
+        boidsToComputePerFrame = flockManager.GetFlockSize() / framesToComputeEntireFlock;
     }
 
     private void Update()
     {
         DoCompute();
+        if(useBatchedCompute)
+        {
+            offset += boidsToComputePerFrame;
+            if (offset >= flockManager.GetFlockSize()) offset = 0;
+        }
+    }
+
+    private void OnDisable()
+    {
+        if (affectorDummy != null) affectorDummy.Release();
     }
 
     private void DoCompute()
     {
-        int flockSize = flockManager.GetFlockSize();
-        
+        /* Select correct compute shader, handle and thread groups for mode; set params exclusive to batched shader */
+        ComputeShader compute;
+        int kernelHandle;
+        int numThreadGroupsX;
+        if(useBatchedCompute)
+        {
+            compute = behaviourComputeBatched;
+            kernelHandle = behaviourComputeBatchedKernelHandle;
+            //groupSizeX = batchedGroupSizeX;
+            //numGroupsX = (flockSize / (int)batchedGroupSizeX);
+            numThreadGroupsX = GetNumGroups(flockManager.GetFlockSize(), (int)batchedGroupSizeX);
+
+            BatchedComputeSetBatchParams(compute); //set batching params only for batching shader
+        }
+        else
+        {
+            compute = behaviourCompute;
+            kernelHandle = behaviourComputeKernelHandle;
+            //groupSizeX = batchedGroupSizeX;
+            //numGroupsX = (flockSize / (int)batchedGroupSizeX);
+            numThreadGroupsX = GetNumGroups(flockManager.GetFlockSize(), (int)nonBatchedGroupSizeX);
+        }
+
         /* Set compute shader data */
-        //boid info
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boids", flockManager.GetFlockBuffer());
-        behaviourCompute.SetInt("numBoids", flockSize);
-
-        //boid movement params
-        behaviourCompute.SetFloat("moveSpeed", behaviourParams.moveSpeed);
-        behaviourCompute.SetFloat("mass", behaviourParams.mass);
-        behaviourCompute.SetFloat("friction", behaviourParams.friction);
-
-        //flocking params
-        behaviourCompute.SetFloat("neighbourDist", behaviourParams.neighbourDistance);
-        behaviourCompute.SetFloat("avoidDist", behaviourParams.avoidDistance);
-        behaviourCompute.SetFloat("avoidSpeed", behaviourParams.avoidSpeed);
-
-        //cursor following
-        behaviourCompute.SetBool("usingCursorFollow", behaviourParams.useCursorFollow);
-        behaviourCompute.SetFloat("cursorFollowSpeed", behaviourParams.cursorFollowSpeed);
-        behaviourCompute.SetFloat("arrivalSlowStartDist", behaviourParams.arrivalSlowStartDist);
-        float[] cursorFollowPos = new float[3] { mouseTargetPos.mouseTargetPosition.x, mouseTargetPos.mouseTargetPosition.y, mouseTargetPos.mouseTargetPosition.z };
-        behaviourCompute.SetFloats("cursorPos", cursorFollowPos);
-
-        //movement bounds
-        /*
-        behaviourCompute.SetBool("usingBounds", behaviourParams.useBoundingCoordinates);
-        behaviourCompute.SetFloat("boundsSize", behaviourParams.boundsSize);
-        behaviourCompute.SetFloats("boundsCentre", new float[3] { behaviourParams.boundsCentre.x, behaviourParams.boundsCentre.y, behaviourParams.boundsCentre.z });
-        behaviourCompute.SetFloat("boundsReturnSpeed", behaviourParams.boundsReturnSpeed);
-        */
-
-        //idle move
-        behaviourCompute.SetBool("usingIdleMvmt", behaviourParams.useIdleMvmt);
-        //behaviourCompute.SetTexture(behaviourComputerKernelHandle, "idleNoiseTex", )
-        behaviourCompute.SetFloat("idleNoiseFrequency", behaviourParams.idleNoiseFrequency);
-        behaviourCompute.SetFloat("idleOffset", behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0f);
-        behaviourCompute.SetFloat("idleMoveSpeed", behaviourParams.idleSpeed);
-
-        //delta time for calculating new positions
-        behaviourCompute.SetFloat("deltaTime", Time.deltaTime);
-
-        //affectors buffers
-        ComputeBuffer affectorDummy = new ComputeBuffer(1, sizeof(int)); //dummy compute buffer for if there are no affectors of that type (must be a better way to do this)
-
-        int numAttractors = affectorManager.GetNumAttractors();
-        behaviourCompute.SetInt("numAttractors", numAttractors);
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "attractors", numAttractors > 0 ? affectorManager.GetAttractorsBuffer() : affectorDummy);
-
-        int numRepulsors = affectorManager.GetNumRepulsors();
-        behaviourCompute.SetInt("numRepulsors", numRepulsors);
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "repulsors", numRepulsors > 0 ? affectorManager.GetRepulsorsBuffer() : affectorDummy);
-
-        int numPushers = affectorManager.GetNumPushers();
-        behaviourCompute.SetInt("numPushers", numPushers);
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "pushers", numPushers > 0 ? affectorManager.GetPushersBuffer() : affectorDummy);
-
-        //boid positions buffer for Graphics.DrawMeshInstancedIndirect
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidPositions", flockRenderer.GetBoidPositionsBuffer());
-
-        //boid forward and up directions buffer for Graphics.DrawMeshInstancedIndirect
-        behaviourCompute.SetBuffer(behaviourComputerKernelHandle, "boidForwardDirs", flockRenderer.GetBoidForwardDirsBuffer());
-
-        /* Get number of threads */
-        int numGroupsX = (flockSize / (int)groupSizeX);
-        if (flockSize % groupSizeX != 0) numGroupsX++; //if flock size isn't divisible by groupSizeX, add an extra group for the stragglers
+        ComputeSetBoidParams(compute, kernelHandle);
+        ComputeSetCursorFollow(compute);
+        ComputeSetMovementBounds(compute);
+        ComputeSetIdleParams(compute);
+        ComputeSetAffectors(compute, kernelHandle);
+        ComputeSetDeltaTime(compute);
+        ComputeSetRendererBuffers(compute, kernelHandle);
 
         /* Dispatch compute shader */
-        behaviourCompute.Dispatch(behaviourComputerKernelHandle, numGroupsX, 1, 1);
+        compute.Dispatch(kernelHandle, numThreadGroupsX, 1, 1);
     }
 
+    private void ComputeSetBoidParams(ComputeShader compute, int kernelHandle)
+    {
+        //boid info
+        compute.SetBuffer(kernelHandle, "boids", flockManager.GetFlockBuffer());
+        compute.SetInt("numBoids", flockManager.GetFlockSize());
+
+        //boid movement params
+        compute.SetFloat("moveSpeed", behaviourParams.moveSpeed);
+        compute.SetFloat("maxSpeed", behaviourParams.maxSpeed);
+        compute.SetFloat("mass", behaviourParams.mass);
+        compute.SetFloat("friction", behaviourParams.friction);
+
+        //flocking params
+        compute.SetFloat("neighbourDist", behaviourParams.neighbourDistance);
+        compute.SetFloat("avoidDist", behaviourParams.avoidDistance);
+        compute.SetFloat("avoidSpeed", behaviourParams.avoidSpeed);
+    }
+
+    private void ComputeSetCursorFollow(ComputeShader compute)
+    {
+        compute.SetBool("usingCursorFollow", behaviourParams.useCursorFollow);
+        compute.SetFloat("cursorFollowSpeed", behaviourParams.cursorFollowSpeed);
+        compute.SetFloat("arrivalSlowStartDist", behaviourParams.arrivalSlowStartDist);
+        float[] cursorFollowPos = new float[3] { mouseTargetPos.mouseTargetPosition.x, mouseTargetPos.mouseTargetPosition.y, mouseTargetPos.mouseTargetPosition.z };
+        compute.SetFloats("cursorPos", cursorFollowPos);
+    }
+
+    private void ComputeSetMovementBounds(ComputeShader compute)
+    {
+        compute.SetBool("usingBounds", behaviourParams.useBoundingCoordinates);
+        compute.SetFloat("boundsSize", behaviourParams.boundsSize);
+        compute.SetFloats("boundsCentre", new float[3] { behaviourParams.boundsCentre.x, behaviourParams.boundsCentre.y, behaviourParams.boundsCentre.z });
+        compute.SetFloat("boundsReturnSpeed", behaviourParams.boundsReturnSpeed);
+    }
+
+    private void ComputeSetIdleParams(ComputeShader compute)
+    {
+        compute.SetBool("usingIdleMvmt", behaviourParams.useIdleMvmt);
+        //compute.SetTexture(behaviourComputerKernelHandle, "idleNoiseTex", )
+        compute.SetFloat("idleNoiseFrequency", behaviourParams.idleNoiseFrequency);
+        compute.SetFloat("idleOffset", behaviourParams.useTimeOffset ? Time.timeSinceLevelLoad : 0f);
+        compute.SetFloat("idleMoveSpeed", behaviourParams.idleSpeed);
+    }
+
+    private void ComputeSetAffectors(ComputeShader compute, int kernelHandle)
+    {
+        int numAttractors = affectorManager.GetNumAttractors();
+        compute.SetInt("numAttractors", numAttractors);
+        compute.SetBuffer(kernelHandle, "attractors", numAttractors > 0 ? affectorManager.GetAttractorsBuffer() : affectorDummy);
+
+        int numRepulsors = affectorManager.GetNumRepulsors();
+        compute.SetInt("numRepulsors", numRepulsors);
+        compute.SetBuffer(kernelHandle, "repulsors", numRepulsors > 0 ? affectorManager.GetRepulsorsBuffer() : affectorDummy);
+
+        int numPushers = affectorManager.GetNumPushers();
+        compute.SetInt("numPushers", numPushers);
+        compute.SetBuffer(kernelHandle, "pushers", numPushers > 0 ? affectorManager.GetPushersBuffer() : affectorDummy);
+    }
+
+    private void ComputeSetDeltaTime(ComputeShader compute)
+    {
+        compute.SetFloat("deltaTime", Time.deltaTime);
+    }
+
+    private void ComputeSetRendererBuffers(ComputeShader compute, int kernelHandle)
+    {
+        //boid positions buffer for Graphics.DrawMeshInstancedIndirect
+        compute.SetBuffer(kernelHandle, "boidPositions", flockRenderer.GetBoidPositionsBuffer());
+
+        //boid forward and up directions buffer for Graphics.DrawMeshInstancedIndirect
+        compute.SetBuffer(kernelHandle, "boidForwardDirs", flockRenderer.GetBoidForwardDirsBuffer());
+    }
+
+    private void BatchedComputeSetBatchParams(ComputeShader compute)
+    {
+        compute.SetInt("boidsToCompute", boidsToComputePerFrame);
+        compute.SetInt("boidOffset", offset);
+        compute.SetInt("framesToComputeEntireFlock", framesToComputeEntireFlock);
+    }
+
+    private int GetNumGroups(int flockSize, int groupSize)
+    {
+        int numGroups = flockSize / (int)groupSize;
+        if (flockSize % groupSize != 0) numGroups++; //if flock size is not divisible by group size, add an extra group for stragglers
+
+        return numGroups;
+    }
 
 }
