@@ -13,12 +13,12 @@ MonoBehaviour:
   m_Name: BoidBehaviourParams
   m_EditorClassIdentifier: 
   moveSpeed: 1
-  maxSpeed: 50
+  maxSpeed: 100
   mass: 1
   friction: 0.1
-  neighbourDistance: 10
-  avoidDistance: 5
-  avoidSpeed: 5
+  neighbourDistance: 50
+  avoidDistance: 3
+  avoidSpeed: 335.58
   numClosestToCheck: 5
   useCursorFollow: 0
   cursorFollowSpeed: 5
@@ -35,5 +35,5 @@ MonoBehaviour:
   obstacleAvoidSpeed: 100
   useIdleMvmt: 1
   idleNoiseFrequency: 0.001
-  idleSpeed: 2
+  idleSpeed: 5
   useTimeOffset: 1

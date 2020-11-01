@@ -1,16 +1,4 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
-Cmd: compileComputeKernel
-  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
-  error: 2 plat 4 at BehaviourCompute.compute(38): syntax error: unexpected token 'AttractorRepulsor'
-  api=4 insize=5766 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 1 plat 4 at bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
-  error: 2 plat 4 at gpuBoid.cginc(9): redefinition of 'Boid'
-  api=4 insize=1109 outsize=0 ok=0
-Cmd: compileComputeKernel
-  error: 2 plat 4 at ../cgincs/behaviourComputeCommon.cginc(21): syntax error: unexpected token 'Boid'
-  error: 1 plat 4 at bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
-  api=4 insize=1109 outsize=0 ok=0
 
 Quitting shader compiler process

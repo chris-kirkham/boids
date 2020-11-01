@@ -46,7 +46,7 @@ public class ControlInputs : MonoBehaviour
     void Start()
     {
         //boid behaviour
-        useMouseFollow = false;
+        useMouseFollow = true;
         useRandomGoal = false;
         useBoundingCoordinates = false;
 
