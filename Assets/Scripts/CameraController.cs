@@ -17,7 +17,7 @@ public class CameraController : MonoBehaviour
     void Update()
     {
         if (ControlInputs.Instance.useMouseLook) transform.localRotation = initialRotation * calcMouseLook();
-        transform.position += calcMovement();
+        transform.position += calcMovement() * Time.deltaTime;
     }
 
     Vector3 calcMovement()

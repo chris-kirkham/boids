@@ -1,10 +1,21 @@
 Base path: 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data', plugins path 'C:/Program Files/Unity/Hub/Editor/2020.1.0f1/Editor/Data/PlaybackEngines'
 Cmd: initializeCompiler
 Cmd: compileComputeKernel
-  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
-  api=4 insize=5828 outsize=10408 ok=1
+  error: 2 plat 4 at ../cgincs/behaviourComputeCommon.cginc(21): syntax error: unexpected token 'Boid'
+  error: 1 plat 4 at bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=1109 outsize=0 ok=0
 Cmd: compileComputeKernel
-  error: 1 plat 4 at ../cgincs/bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
-  api=4 insize=5549 outsize=10835 ok=1
+  error: 2 plat 4 at ../cgincs/behaviourComputeCommon.cginc(26): redefinition of 'Boid'
+  error: 1 plat 4 at bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=827 outsize=0 ok=0
+Cmd: compileComputeKernel
+  error: 2 plat 4 at BehaviourCompute.compute(17): undeclared identifier 'ConstructBoid'
+  error: 1 plat 4 at bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=827 outsize=0 ok=0
+Cmd: compileComputeKernel
+  error: 2 plat 4 at BehaviourCompute.compute(16): 'lerp': no matching 0 parameter intrinsic function; Possible intrinsic functions are: lerp(float|half|min10float|min16float, float|half|min10float|min16float, float|half|min10float|min16float)
+  error: 2 plat 4 at BehaviourCompute.compute(16): syntax error: unexpected token '*'
+  error: 1 plat 4 at bccNoise4.cginc(3): 'exclude_renderers' : unknown pragma ignored
+  api=4 insize=909 outsize=0 ok=0
 
 Quitting shader compiler process

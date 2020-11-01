@@ -4,7 +4,7 @@ struct Boid
 {
 	float3 position;
 	float3 velocity;
-}
+};
 
 Boid constructBoid(float3 position, float3 velocity)
 {

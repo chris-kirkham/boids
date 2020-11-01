@@ -7,92 +7,50 @@ using UnityEngine;
 /// </summary>
 public class GPUAffectorManager : MonoBehaviour
 {
-    private ComputeBuffer attractorsBuffer, repulsorsBuffer, pushersBuffer;
-    private int numAttractors, numRepulsors, numPushers;
+    private BoidAffector[] affectors;
+    private ComputeBuffer affectorsBuffer;
+    private int numAffectors;
 
     void Start()
     {
-        /* Get affectors from scene and convert to ComputeBuffers */ 
-        BoidAffector[] affectors = FindObjectsOfType<BoidAffector>();
-        List<GPUAttractorRepulsor> attractors = new List<GPUAttractorRepulsor>();
-        List<GPUAttractorRepulsor> repulsors = new List<GPUAttractorRepulsor>();
-        List<GPUPusher> pushers = new List<GPUPusher>();
-        foreach (BoidAffector ar in affectors)
+        //Find affectors in scene and cache them to a list
+        affectors = FindObjectsOfType<BoidAffector>();
+        numAffectors = affectors.Length;
+        if(numAffectors > 0)
         {
-            switch(ar.type)
+            affectorsBuffer = new ComputeBuffer(numAffectors, GPUAffector.sizeofGPUAffector);
+            List<GPUAffector> affectorStructs = new List<GPUAffector>(numAffectors);
+            foreach (BoidAffector affector in affectors)
             {
-                case BoidAffector.Type.Attractor:
-                    attractors.Add(new GPUAttractorRepulsor(ar.transform.position, ar.radius, ar.strength));
-                    break;
-                case BoidAffector.Type.Repulsor:
-                    repulsors.Add(new GPUAttractorRepulsor(ar.transform.position, ar.radius, ar.strength));
-                    break;
-                case BoidAffector.Type.Pusher:
-                    pushers.Add(new GPUPusher(ar.transform.position, ar.transform.forward, ar.radius, ar.strength));
-                    break;
-                default:
-                    Debug.LogError("Tried to add unknown affector type to affector buffers; did you add a new one and not update this????");
-                    break;
+                switch(affector.shape)
+                {
+                    case BoidAffector.Shape.Sphere:
+                        affectorStructs.Add(new GPUAffector(affector.transform.position, affector.transform.forward, affector.strength, affector.radius, (uint)affector.type));
+                        break;
+                    case BoidAffector.Shape.AABB:
+                        affectorStructs.Add(new GPUAffector(affector.transform.position, affector.transform.forward, affector.strength, affector.aabbMin, affector.aabbMax, (uint)affector.type));
+                        break;
+                    default:
+                        break;
+                }
             }
-        }
 
-        numAttractors = attractors.Count;
-        numRepulsors = repulsors.Count;
-        numPushers = pushers.Count;
-
-        if(numAttractors > 0)
-        {
-            attractorsBuffer = new ComputeBuffer(attractors.Count, GPUAttractorRepulsor.sizeofGPUAttractorRepulsor);
-            attractorsBuffer.SetData(attractors);
-        }
-
-        if(numRepulsors > 0)
-        {
-            repulsorsBuffer = new ComputeBuffer(repulsors.Count, GPUAttractorRepulsor.sizeofGPUAttractorRepulsor);
-            repulsorsBuffer.SetData(repulsors);
-        }
-
-        if(numPushers > 0)
-        {
-            pushersBuffer = new ComputeBuffer(pushers.Count, GPUPusher.sizeofGPUPusher);
-            pushersBuffer.SetData(pushers);
+            affectorsBuffer.SetData(affectorStructs);
         }
     }
 
     private void OnDisable()
     {
-        if (attractorsBuffer != null) attractorsBuffer.Release();
-        if (repulsorsBuffer != null) repulsorsBuffer.Release();
-        if (pushersBuffer != null) pushersBuffer.Release();
+        if (affectorsBuffer != null) affectorsBuffer.Release();
     }
 
-    public ComputeBuffer GetAttractorsBuffer()
+    public ComputeBuffer GetAffectorsBuffer()
     {
-        return attractorsBuffer;
+        return affectorsBuffer;
     }
 
-    public ComputeBuffer GetRepulsorsBuffer()
+    public int GetNumAffectors()
     {
-        return repulsorsBuffer;
-    }
-
-    public ComputeBuffer GetPushersBuffer()
-    {
-        return pushersBuffer;
-    }
-
-    public int GetNumAttractors()
-    {
-        return numAttractors;
-    }
-
-    public int GetNumRepulsors()
-    {
-        return numRepulsors;
-    }
-
-    public int GetNumPushers()
-    {
-        return numPushers;
+        return numAffectors;
     }
 }

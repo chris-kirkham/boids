@@ -156,17 +156,9 @@ public class BehaviourComputeScript : MonoBehaviour
 
     private void ComputeSetAffectors(ComputeShader compute, int kernelHandle)
     {
-        int numAttractors = affectorManager.GetNumAttractors();
-        compute.SetInt("numAttractors", numAttractors);
-        compute.SetBuffer(kernelHandle, "attractors", numAttractors > 0 ? affectorManager.GetAttractorsBuffer() : affectorDummy);
-
-        int numRepulsors = affectorManager.GetNumRepulsors();
-        compute.SetInt("numRepulsors", numRepulsors);
-        compute.SetBuffer(kernelHandle, "repulsors", numRepulsors > 0 ? affectorManager.GetRepulsorsBuffer() : affectorDummy);
-
-        int numPushers = affectorManager.GetNumPushers();
-        compute.SetInt("numPushers", numPushers);
-        compute.SetBuffer(kernelHandle, "pushers", numPushers > 0 ? affectorManager.GetPushersBuffer() : affectorDummy);
+        int numAffectors = affectorManager.GetNumAffectors();
+        compute.SetInt("numAffectors", numAffectors);
+        compute.SetBuffer(kernelHandle, "affectors", numAffectors > 0 ? affectorManager.GetAffectorsBuffer() : affectorDummy);
     }
 
     private void ComputeSetDeltaTime(ComputeShader compute)
@@ -192,6 +184,11 @@ public class BehaviourComputeScript : MonoBehaviour
 
     private int GetNumGroups(int flockSize, int groupSize)
     {
+        if(groupSize <= 0)
+        {
+            throw new System.Exception("Compute shader group size must be > 0.");
+        }
+
         int numGroups = flockSize / (int)groupSize;
         if (flockSize % groupSize != 0) numGroups++; //if flock size is not divisible by group size, add an extra group for stragglers
 
