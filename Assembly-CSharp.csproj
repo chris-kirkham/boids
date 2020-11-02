@@ -62,7 +62,7 @@
     <Compile Include="Assets\Scripts\UI\HUD_FrameTime.cs" />
     <Compile Include="Assets\Scripts\UI\HUD_NumBoids.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPUFlockSpawner.cs" />
-    <Compile Include="Assets\Scripts\MouseTargetController.cs" />
+    <Compile Include="Assets\Scripts\Mouse follow controllers\MouseTargetController.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidSpawner.cs" />
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidBehaviour\BoidBehaviour_Singlethreaded.cs" />
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidVision\BoidVision.cs" />
@@ -76,6 +76,7 @@
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidParamsUpdater.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\BoidAffector.cs" />
     <Compile Include="Assets\Scripts\Utility\Noise\DirectionalPerlin.cs" />
+    <Compile Include="Assets\Scripts\Camera\Camera_RotateAroundPivot.cs" />
     <Compile Include="Assets\Scripts\ControlInputs.cs" />
     <Compile Include="Assets\Scripts\SpatialHash\SpatialHashDebug.cs" />
     <Compile Include="Assets\Scripts\Boid\Behaviour\BoidMovement\BoidMovement_Rigidbody.cs" />
@@ -88,7 +89,7 @@
     <Compile Include="Assets\Scripts\ScriptableObjects\NumBoids.cs" />
     <Compile Include="Assets\Scripts\GPU Flocking\GPU Structs\GPUBoid.cs" />
     <Compile Include="Assets\Scripts\Boid\BoidController\BoidCollectiveController.cs" />
-    <Compile Include="Assets\Scripts\Camera\Camera_RotateAroundPivot.cs" />
+    <Compile Include="Assets\Scripts\Mouse follow controllers\MouseTarget_FollowGround.cs" />
   </ItemGroup>
   <ItemGroup>
      <None Include="Assets\Scripts\GPU Flocking\cgincs\bccNoise8.cginc" />

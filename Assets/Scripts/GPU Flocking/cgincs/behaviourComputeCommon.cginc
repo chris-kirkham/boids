@@ -2,8 +2,8 @@
 
 #define GROUP_SIZE 64
 
-#define BOID_VISION_CONE_MIN_DOT -0.5f
-#define TURNING_SPEED 10.0f
+#define BOID_VISION_CONE_MIN_DOT -0.2f
+#define TURNING_SPEED 5.0f
 
 /*
 #include "../cgincs/gpuBoid.cginc"
@@ -85,8 +85,8 @@ float3 ReactToOtherBoids(uint id)
             float3 otherBoidVel = otherBoid.velocity;
             float dist = distance(pos, otherBoidPos);
 
-            //if (dist < neighbourDist && length(vel) > 0 && length(otherBoidVel) > 0 && dot(normalize(vel), normalize(otherBoidVel)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
-            if (dist < neighbourDist)
+            if (dist < neighbourDist && length(vel) > 0 && length(otherBoidVel) > 0 && dot(normalize(vel), normalize(otherBoidVel)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
+            //if (dist < neighbourDist)
             {
                 neighbourCount++;
 

@@ -16,7 +16,6 @@ public class Camera_RotateAroundPivot : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
         transform.RotateAround(pivotPoint.transform.position, transform.up, -ControlInputs.Instance.moveHorizontal * moveSpeed * Time.deltaTime);
         transform.RotateAround(pivotPoint.transform.position, transform.right, ControlInputs.Instance.moveVertical * moveSpeed * Time.deltaTime);
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[RequireComponent(typeof(Camera))]
 public class MouseTargetController : MonoBehaviour
 {
     public MouseTargetPosition mouseTarget;
@@ -18,7 +19,6 @@ public class MouseTargetController : MonoBehaviour
         targetVisualiser = Instantiate(targetVisualiser);
         targetZ += cam.nearClipPlane;
     }
-
     void Update()
     {
         if(ControlInputs.Instance.useMouseFollow)
