@@ -6,7 +6,6 @@ public class Camera_RotateAroundPivot : MonoBehaviour
 {
     public GameObject pivotPoint;
     public float moveSpeed;
-    private Quaternion initialRotation;
 
     void Start()
     {

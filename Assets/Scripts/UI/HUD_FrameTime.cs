@@ -7,24 +7,29 @@ public class HUD_FrameTime : MonoBehaviour
 {
     public enum Mode { FrameRate, FrameTime} ;
     public Mode mode = Mode.FrameRate;
+    [Min(0)] public float updateRate = 0.1f;
     private Text frameTimeText;
 
-    // Start is called before the first frame update
     void Start()
     {
         frameTimeText = GetComponent<Text>();
+        StartCoroutine(UpdateFrameTimeText());
     }
 
-    // Update is called once per frame
-    void Update()
+    private IEnumerator UpdateFrameTimeText()
     {
-        if(mode == Mode.FrameRate)
+        while(true)
         {
-            frameTimeText.text = 1 / Time.deltaTime + " fps";
-        }
-        else
-        {
-            frameTimeText.text = Time.deltaTime * 1000 + " ms";
+            if (mode == Mode.FrameRate)
+            {
+                frameTimeText.text = 1 / Time.deltaTime + " fps";
+            }
+            else
+            {
+                frameTimeText.text = Time.deltaTime * 1000 + " ms";
+            }
+
+            yield return new WaitForSeconds(updateRate);
         }
     }
 }
