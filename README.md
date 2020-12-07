@@ -1,10 +1,10 @@
 # GPU boids
 #### An implementation of the Boids algorithm (Reynolds, C. W. (1987) Flocks, Herds, and Schools: A Distributed Behavioral Model) for Unity. Utilises compute shaders to significantly improve performance vs. a typical CPU-based implementation.
-| <img src="README_1.gif"> | <img src="README_2.gif"> | <img src="README_3.gif"> |
-|:----:|:----:|:----:|
+| <img src="README_GPU_1.gif"> |
+|:----:|
 
 ## About
-This is a Unity implementation of Craig Reynold's *Boids* algorithm (http://www.cs.toronto.edu/~dt/siggraph97-course/cwr87/). Essentially, the system is formed of several "boid" particles which react dynamically to each other and to the environment in a manner similar to a flock of birds or a school of fish.
+This is a Unity implementation of Craig Reynold's Boids algorithm. Essentially, the system is formed of several "boid" agents which react dynamically to each other and to the environment in a manner similar to a flock of birds or a school of fish. This implementation also includes "affectors", which add forces to boids within their range, and cursor following, which causes boids to follow a 3D cursor in the game world.
 
 ## Controls
 <p> WASD - move camera <br> 
