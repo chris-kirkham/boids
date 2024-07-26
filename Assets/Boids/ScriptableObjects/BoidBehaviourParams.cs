@@ -15,7 +15,7 @@ public class BoidBehaviourParams : ScriptableObject
     public float neighbourDistance = 10f;
     public float avoidDistance = 1f;
     public float avoidSpeed = 1f;
-    public int numClosestToCheck = 5;
+    //public int numClosestToCheck = 5;
 
     [Header("Cursor/goal following")]
     public bool useCursorFollow;

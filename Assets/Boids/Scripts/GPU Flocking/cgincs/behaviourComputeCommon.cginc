@@ -4,6 +4,7 @@
 
 #define BOID_VISION_CONE_MIN_DOT -0.2f
 #define TURNING_SPEED 5.0f
+#define MAX_NEIGHBOUR_COUNT 5
 
 /*
 #include "../cgincs/gpuBoid.cginc"
@@ -78,21 +79,29 @@ float3 ReactToOtherBoids(uint id)
     uint neighbourCount = 0;
     for (uint i = 0; i < numBoids; i++)
     {
-        if (i != id)
+        //don't count self as neighbour
+        if (i == id)
         {
-            Boid otherBoid = boids[i];
-            float3 otherBoidPos = otherBoid.position;
-            float3 otherBoidVel = otherBoid.velocity;
-            float dist = distance(pos, otherBoidPos);
+            continue;
+        }
+        
+        Boid otherBoid = boids[i];
 
-            if (dist < neighbourDist && length(vel) > 0 && length(otherBoidVel) > 0 && dot(normalize(vel), normalize(otherBoidVel)) > BOID_VISION_CONE_MIN_DOT) //this won't work if a velocity is zero
-            //if (dist < neighbourDist)
+        float3 otherBoidPos = otherBoid.position;
+        float3 otherBoidVel = otherBoid.velocity;
+        float dist = distance(pos, otherBoidPos);
+
+        //if (dist < neighbourDist && length(vel) > 0 && dot(normalize(vel), normalize(otherBoidPos - pos)) > BOID_VISION_CONE_MIN_DOT)
+        if (dist < neighbourDist)
+        {
+            if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
+            centre += otherBoidPos - pos;
+            velocityMatch += otherBoidVel;
+
+            neighbourCount++;
+            if (neighbourCount > MAX_NEIGHBOUR_COUNT)
             {
-                neighbourCount++;
-
-                if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
-                centre += otherBoidPos - pos;
-                velocityMatch += otherBoidVel;
+                break;
             }
         }
     }

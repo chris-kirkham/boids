@@ -12,19 +12,16 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 704c2dc85af21b1459d0181de1de7008, type: 3}
   m_Name: BoidBehaviourParams
   m_EditorClassIdentifier: 
-  moveSpeed: 1
+  moveSpeed: 2
   maxSpeed: 50
   mass: 1
   drag: 0.1
-  neighbourDistance: 10
-  avoidDistance: 2
+  neighbourDistance: 100
+  avoidDistance: 5
   avoidSpeed: 10
-  numClosestToCheck: 5
   useCursorFollow: 0
   cursorFollowSpeed: 10
   arrivalSlowStartDist: 50
-  useRandomGoal: 0
-  goalFollowSpeed: 5
   useBounds: 0
   boundsCentre: {x: 0, y: 250, z: 0}
   boundsSize: 200
