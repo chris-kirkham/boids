@@ -48,9 +48,9 @@ public class BehaviourComputeScript : MonoBehaviour
         affectorManager = GetComponent<GPUAffectorManager>();
 
         behaviourComputeKernelHandle = behaviourCompute.FindKernel("CSMain");
-        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputeKernelHandle, out nonBatchedGroupSizeX, out uint dummyY, out uint dummyZ);
+        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputeKernelHandle, out nonBatchedGroupSizeX, out _, out _);
         behaviourComputeBatchedKernelHandle = behaviourComputeBatched.FindKernel("CSMain");
-        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputeKernelHandle, out batchedGroupSizeX, out dummyY, out dummyZ);
+        behaviourCompute.GetKernelThreadGroupSizes(behaviourComputeKernelHandle, out batchedGroupSizeX, out _, out _);
 
         affectorDummy = new ComputeBuffer(1, sizeof(int));
 
@@ -122,6 +122,7 @@ public class BehaviourComputeScript : MonoBehaviour
         compute.SetFloat("neighbourDist", behaviourParams.neighbourDistance);
         compute.SetFloat("avoidDist", behaviourParams.avoidDistance);
         compute.SetFloat("avoidSpeed", behaviourParams.avoidSpeed);
+        //compute.SetBool("useRandomNeighbourHack", behaviourParams.useRandomNeighbourHack);
     }
 
     private void ComputeSetCursorFollow(ComputeShader compute)
@@ -190,5 +191,4 @@ public class BehaviourComputeScript : MonoBehaviour
 
         return numGroups;
     }
-
 }

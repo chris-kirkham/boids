@@ -461,7 +461,7 @@ PrefabInstance:
     - target: {fileID: 8625045079839910976, guid: 78f12036c629c5c42a07e3651d201e22,
         type: 3}
       propertyPath: flockSize
-      value: 100000
+      value: 65536
       objectReference: {fileID: 0}
     - target: {fileID: 8625045079839910977, guid: 78f12036c629c5c42a07e3651d201e22,
         type: 3}
@@ -521,12 +521,12 @@ PrefabInstance:
     - target: {fileID: 8625045079839910978, guid: 78f12036c629c5c42a07e3651d201e22,
         type: 3}
       propertyPath: useBatchedCompute
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 8625045079839910978, guid: 78f12036c629c5c42a07e3651d201e22,
         type: 3}
       propertyPath: framesToComputeEntireFlock
-      value: 4
+      value: 8
       objectReference: {fileID: 0}
     - target: {fileID: 8625045079839910980, guid: 78f12036c629c5c42a07e3651d201e22,
         type: 3}

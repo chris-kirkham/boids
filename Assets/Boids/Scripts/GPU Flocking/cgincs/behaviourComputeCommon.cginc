@@ -4,7 +4,8 @@
 
 #define BOID_VISION_CONE_MIN_DOT -0.2f
 #define TURNING_SPEED 5.0f
-#define MAX_NEIGHBOUR_COUNT 5
+
+//#define USE_NEIGHBOUR_HACK
 
 /*
 #include "../cgincs/gpuBoid.cginc"
@@ -31,6 +32,11 @@ RWStructuredBuffer<float3> boidForwardDirs;
 /* Boid affectors */
 StructuredBuffer<Affector> affectors;
 uint numAffectors;
+
+/* Random neighbour hack */
+bool useRandomNeighbourHack;
+uint maxNeighbourCount;
+StructuredBuffer<int> randInts;
 
 /* Flock behaviour params, same for each boid */
 CBUFFER_START(Params)
@@ -66,6 +72,15 @@ float idleOffset;
 float idleMoveSpeed;
 CBUFFER_END
 
+float random(float2 p)
+{
+    float2 K1 = float2(
+        23.14069263277926, // e^pi (Gelfond's constant)
+        2.665144142690225 // 2^sqrt(2) (Gelfond–Schneider constant)
+    );
+    return frac(cos(dot(p, K1)) * 12345.6789);
+}
+
 float3 ReactToOtherBoids(uint id)
 {
     Boid boid = boids[id];
@@ -77,8 +92,18 @@ float3 ReactToOtherBoids(uint id)
     float3 velocityMatch = float3(0, 0, 0);
 
     uint neighbourCount = 0;
+
+#ifdef USE_NEIGHBOUR_HACK
+    uint i;
+    uint tries = 0;
+    while(tries < maxNeighbourCount)
+    { 
+        i = (uint)(random(float2(pos.x + tries, pos.y + tries)) * numBoids);
+        tries++;
+#else 
     for (uint i = 0; i < numBoids; i++)
     {
+#endif 
         //don't count self as neighbour
         if (i == id)
         {
@@ -91,18 +116,19 @@ float3 ReactToOtherBoids(uint id)
         float3 otherBoidVel = otherBoid.velocity;
         float dist = distance(pos, otherBoidPos);
 
-        //if (dist < neighbourDist && length(vel) > 0 && dot(normalize(vel), normalize(otherBoidPos - pos)) > BOID_VISION_CONE_MIN_DOT)
-        if (dist < neighbourDist)
+        if (dist < neighbourDist && length(vel) > 0 && dot(normalize(vel), normalize(otherBoidPos - pos)) > BOID_VISION_CONE_MIN_DOT)
         {
-            if (dist < avoidDist) avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
+            avoidDir += (pos - otherBoidPos) * saturate(1.0f - (dist / avoidDist)); //scale avoid speed by distance (max ||boid pos - other boid pos||)
             centre += otherBoidPos - pos;
             velocityMatch += otherBoidVel;
 
+#ifndef USE_NEIGHBOUR_HACK
             neighbourCount++;
-            if (neighbourCount > MAX_NEIGHBOUR_COUNT)
+            if (neighbourCount > maxNeighbourCount)
             {
                 break;
             }
+#endif
         }
     }
 

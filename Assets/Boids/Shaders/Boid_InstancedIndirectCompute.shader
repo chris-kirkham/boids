@@ -96,8 +96,9 @@ Shader "Instanced/Boid_InstancedIndirectCompute"
 			#else
 				col = float4(1, 0, 1, 1);
 			#endif
+
 				fixed4 c = tex2D(_MainTex, IN.uv_MainTex) * col;
-				o.Albedo = c.rgb;
+				o.Albedo = c.rgb * (_LookAt._m00_m01_m02 % 1);
 				o.Emission = _Emission.rgb;
 				o.Metallic = _Metallic;
 				o.Smoothness = _Glossiness;
